@@ -9,7 +9,7 @@ bootOS operating system in 512 bytes (boot sector)
 by Oscar Toledo G. Jul/22/2019
 
 http://nanochess.org
-https://github.com/nanochess
+https://github.com/nanochess/bootOS
 
 It's compatible with 8088 (the original IBM PC).
 
@@ -20,7 +20,7 @@ Use this command line:
 
   nasm -f bin os.asm -l os.lst -o os.img
 
-
+        
 What is bootOS:
 
   bootOS is a monolithic operating system that fits in
@@ -34,9 +34,31 @@ What is bootOS:
   This operating system runs programs as boot sectors
   at 0000:7c00. 
 
-  It provides a single service to exit to the operating
-  system using int 0x20.
+  It provides the following services:
 
+     int 0x20   Exit to operating system.
+     int 0x21   Input key and show in screen.
+                Entry: none
+                Output: AL = ASCII key pressed.
+                Affects: AH/BX/BP.
+     int 0x22   Output character to screen.
+                Entry: AL = Character.
+                Output: none.
+                Affects: AH/BX/BP.
+     int 0x23   Load file.
+                Entry: DS:BX = Filename terminated with zero.
+                       ES:DI = Point to source data (512 bytes)
+                Output: Carry flag = 0 = Found, 1 = Not found.
+                Affects: All registers (including ES).
+     int 0x24   Save file.
+                Entry: DS:BX = Filename terminated with zero.
+                       ES:DI = Point to data target (512 bytes)
+                Output: Carry flag = 0 = Successful. 1 = Error.
+                Affects: All registers (including ES).
+     int 0x25   Delete file.
+                Entry: DS:BX = Filename terminated with zero.
+                Affects: All registers (including ES).
+        
 
 Filesystem organization:
 
@@ -67,12 +89,12 @@ Starting bootOS:
   disk space as only uses the first two sectors of the
   disk and then the first sector of each following
   track.
-
+        
   For emulation make sure to deposit it at the start
   of a .img file of 360K, 720K or 1440K. (at least
   VirtualBox detects the type of disk by the length
   of the image file)
-
+        
   For Mac OS X and Linux you can create a 360K image
   in this way:
 
@@ -92,7 +114,7 @@ Running bootOS:
   so it initializes the directory. It also copies itself
   again to the boot sector, this is useful to init new
   disks.
-
+        
 bootOS commands:
 
   ver           Shows the version (none at the moment)
@@ -101,11 +123,15 @@ bootOS commands:
   format        As explained before.
   enter         Allows to enter up to 512 hexadecimal
                 bytes to create another file.
-
+        
                 Notice the line size is 128 characters so
                 you must break the input into chunks of
                 4, 8 or 16 bytes.
-
+        
+                It also allows to copy the last executed
+                program just press Enter when the 'h' prompt
+                appears and type the new name.
+        
 For example: (Character + is Enter key)
 
   $enter+
@@ -119,25 +145,24 @@ For example: (Character + is Enter key)
   $hello+
   Hello, world
   $
-
+        
 bootOS programs: (Oh yes! we have software support)
-
+        
   fbird         https://github.com/nanochess/fbird
   Pillman       https://github.com/nanochess/pillman
   invaders      https://github.com/nanochess/invaders
   bootBASIC     https://github.com/nanochess/bootBASIC
-
+        
 You can copy the machine code directly using the 'enter'
 command, or you can create a file with signature bytes
 with the same command and later copy the binary into the
 .img file using the signature bytes as a clue to locate
 the right position in the image file.
-
+        
 Or you can find a pre-designed disk image along this Git
 with the name osall.img
-
+        
 Enjoy it!
-
 
 
 >> ATTENTION <<        
