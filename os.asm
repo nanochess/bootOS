@@ -52,7 +52,29 @@
         ;                 Affects: All registers (including ES).
         ;
         ; 
+        ; Filesystem organization:
+        ;
+        ;   bootOS uses tracks from 0 to 32, side 0, sector 1.
+        ;
+        ;   The directory is contained in track 0, side 0, sector 2.
+        ;
+        ;   Each entry in the directory is 16 bytes wide, and
+        ;   contains the ASCII name of the file finished with a
+        ;   zero byte. A sector has a capacity of 512 bytes, it
+        ;   means only 32 files can be kept on a floppy disk.
+        ;
+        ;   Deleting a file is a matter of zeroing a whole entry.
+        ;
+        ;   Each file is one sector long. Its location in the
+        ;   disk is derived from its position in the directory.
+        ;
+        ;   The 1st file is located at track 1, side 0, sector 1.
+        ;   The 2nd file is located at track 2, side 0, sector 1.
+        ;   The 32nd file is located at track 32, side 0, sector 1.
+        ;
+        ;
         ; Starting bootOS:
+        ;
         ;   Just make sure to write it at the boot sector of a
         ;   floppy disk. It can work with any floppy disk size
         ;   (360K, 720K, 1.2MB and 1.44MB) and it will waste the
@@ -79,12 +101,14 @@
         ;     qemu-system-x86_64 -fda os.img
         ; 
         ; Running bootOS:
+        ;
         ;   The first time you should enter the 'format' command,
         ;   so it initializes the directory. It also copies itself
         ;   again to the boot sector, this is useful to init new
         ;   disks.
         ;
         ; bootOS commands:
+        ;
         ;   ver           Shows the version (none at the moment)
         ;   dir           Shows the directory's content.
         ;   del filename  Deletes the "filename" file.
@@ -101,6 +125,7 @@
         ;                 appears and type the new name.
         ;
         ; For example: (Character + is Enter key)
+        ;   
         ;   $enter+
         ;   hbb 17 7c 8a 07 84 c0 74 0c 53 b4 0e bb 0f 00 cd+
         ;   h10 5b 43 eb ee cd 20 48 65 6c 6c 6f 2c 20 77 6f+
