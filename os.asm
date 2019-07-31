@@ -197,39 +197,42 @@ restart:
 
         mov di,commands-boot+osbase ; Point to commands list
 
-os11:   mov al,[di]     ; Read length of command in chars
+.loop:
+        mov al,[di]     ; Read length of command in chars
         inc di
         and ax,0x00ff   ; Is it zero?
-        je os12         ; Yes, jump
+        je .try_disk    ; Yes, jump
         xchg ax,cx
         push si         ; Save current position
         rep cmpsb       ; Compare statement
-        jne os14        ; Equal? No, jump
+        jne .next       ; Equal? No, jump
         call word [di]  ; Call command process
         jmp restart     ; Get another line
 
-os14:   add di,cx       ; Advance the list pointer
+.next:
+        add di,cx       ; Advance the list pointer
         inc di          ; Avoid the address
         inc di
         pop si
-        jmp os11        ; Compare another statement
+        jmp .loop       ; Compare another statement
 
-os12:   push si         ; Input pointer
+.try_disk:
+        push si         ; Input pointer
         pop bx
         mov di,boot     ; Location to read data
         call load_file  ; Load file
-        jc os7          ; Jump if error
+        jc not_found    ; Jump if error
         jmp boot+boot-osbase    ; Jump to loaded file
 
         ;
         ; File not found error
         ;
-os7:
-        mov si,error_message-boot+osbase
+not_found:
+        mov si, .message-boot+osbase
         call output_string
         jmp restart     ; Go to expect another command
 
-error_message:
+.message:
         db "Nope",0x0d,0
 
         ;
@@ -239,17 +242,38 @@ dir_command:
         call read_dir   ; Read the directory
 
         mov si,sector   ; Point to sector
-os18:
+.loop:
         cmp byte [si],0         ; Empty entry?
-        je os17                 ; Yes, jump
+        je .next                ; Yes, jump
         push si
         call output_string      ; Show name
         call new_line           ; Next line on screen
         pop si
-os17:   add si,entry_size       ; Advance one entry
+.next:
+        add si,entry_size       ; Advance one entry
         cmp si,sector+sector_size       ; Finished sector?
-        jne os18                ; No, jump
+        jne .loop               ; No, jump
         ret                     ; Return
+
+del_command:
+        cmp byte [si],0x20      ; Avoid spaces
+        jne .spaces_done
+        inc si
+        jmp del_command
+
+.spaces_done:
+        mov bx,si       ; Copy SI (buffer pointer) to BX
+        ;
+        ; Delete file
+        ; bx = Pointer to filename ended with zero byte.
+        ;
+delete_file:
+        call find_file  ; Find file
+        jc not_found    ; If carry set then not found, jump.
+        mov cx,entry_size
+        mov al,0
+        rep stosb       ; Fill whole entry with zero.
+        jmp write_dir   ; Write directory.
 
         ;
         ; 'format' command
@@ -276,16 +300,16 @@ format_command:
 filename_length:
         push si
         xor cx,cx       ; cx = 0
-os5:
+.loop:
         lodsb           ; Read character.
         inc cx          ; Count character.
         cmp al,0        ; Is it zero (end character)?
-        jne os5         ; No, jump.
+        jne .loop       ; No, jump.
         dec cx          ; Don't count termination character.
 
         pop si
         mov di,sector   ; Point to start of directory.
-os4:
+borrow_ret:
         ret
         
         ;
@@ -297,7 +321,7 @@ load_file:
         push di         ; Save destination
         call find_file  ; Find the file
         pop bx          ; Restore destination on BX
-        jc os4          ; Jump if error
+        jc borrow_ret   ; Jump if error
         mov ah,0x02     ; Read sector
         jmp disk        ; Read into BX buffer
 
@@ -316,17 +340,19 @@ save_file:
         call delete_file ; Delete previous file
         pop bx          ; Restore filename pointer
         call filename_length    ; Prepare for lookup
-os8:    mov al,[di]     ; Read first byte of directory entry
+.find_empty:
+        mov al,[di]     ; Read first byte of directory entry
         cmp al,0        ; Is it zero?
-        je os9          ; Yes, jump because empty entry.
+        je .found       ; Yes, jump because empty entry.
         add di,entry_size       ; Go to next entry.
         cmp di,sector+sector_size       ; Full directory?
-        jne os8         ; No, jump.
+        jne .find_empty ; No, jump.
         pop bx
         stc             ; Yes, error.
         ret
 
-os9:    push di
+.found:
+        push di
         rep movsb       ; Copy full name into directory
         call write_dir  ; Save directory
         pop di
@@ -334,26 +360,6 @@ os9:    push di
         pop bx          ; Source data
         mov ah,0x03     ; Write sector
         jmp disk        ; Do operation with disk.
-
-del_command:
-os22:
-        cmp byte [si],0x20      ; Avoid spaces
-        jne os21
-        inc si
-        jmp os22
-
-os21:   mov bx,si       ; Copy SI (buffer pointer) to BX
-        ;
-        ; Delete file
-        ; bx = Pointer to filename ended with zero byte.
-        ;
-delete_file:
-        call find_file  ; Find file
-        jc os4          ; If carry set then not found, jump.
-        mov cx,entry_size
-        mov al,0
-        rep stosb       ; Fill whole entry with zero.
-        jmp write_dir   ; Write directory.
 
         ;
         ; Find file
@@ -367,7 +373,7 @@ find_file:
         call read_dir   ; Read directory
         pop si
         call filename_length    ; Get filename length and setup DI
-os6:        push si
+.loop:  push si
         push di
         push cx
         repe cmpsb      ; Compare name with entry
@@ -378,7 +384,7 @@ os6:        push si
 
         add di,entry_size       ; Go to next entry.
         cmp di,sector+sector_size       ; Complete directory?
-        jne os6         ; No, jump
+        jne .loop       ; No, jump
         stc             ; Error, not found.
         ret             ; Return
 
@@ -411,8 +417,8 @@ get_location:
         ;
 read_dir:
         mov ah,0x02
-        db 0xb9         ; jmp more_dir
-                        ; but instead MOV CX, to jump over opcode
+        db 0xb9         ; skip the mov ah,0x03
+                        ; by using it as the literal for MOV CX
         ;
         ; Write the directory to disk
         ;
@@ -432,7 +438,7 @@ disk:
         pop cx
         pop bx
         pop ax
-        jc disk
+        jc disk         ; Retry.
         ret
 
         ;
@@ -448,18 +454,19 @@ input_line:
         mov si,line     ; Setup SI and DI to start of line buffer
         push si
         pop di          ; Target for writing line
-os1:    call input_key  ; Read keyboard
+.loop:  call input_key  ; Read keyboard
         cmp al,0x08     ; Backspace?
-        jne os2         ; No, jump
+        jne .not_back   ; No, jump
         dec di          ; Get back one character
-        jmp os1         ; Wait another key
+        jmp .loop       ; Wait another key
 
-os2:    cmp al,0x0d     ; CR pressed?
-        jne os10
+.not_back:
+        cmp al,0x0d     ; CR pressed?
+        jne .skip0
         mov al,0x00
-os10:
+.skip0:
         stosb           ; Save key in buffer
-        jne os1         ; No, wait another key
+        jne .loop       ; No, wait another key
         ret             ; Yes, return
 
         ;
@@ -471,7 +478,7 @@ os10:
 output_string:
         lodsb           ; Read character
         cmp al,0x00     ; Is it 0x00?
-        je os15         ; Yes, terminate
+        je borrow_ret2  ; Yes, terminate
         call output     ; Output to screen
         jmp output_string       ; Repeat loop
 
@@ -488,19 +495,19 @@ input_key:
         ;
 output:
         cmp al,0x0d
-        jne os3
+        jne raw_output
         ;
         ; Go to next line (generates LF+CR)
         ;
 new_line:
         mov al,0x0a
-        call os3
+        call raw_output
         mov al,0x0d
-os3:
+raw_output:
         mov ah,0x0e
         mov bx,0x0007
         int 0x10
-os15:
+borrow_ret2:
         ret
 
         ;
@@ -533,20 +540,22 @@ os20:
 
         ;
         ; Convert ASCII letter to hexadecimal digit
+	; Carry set unless end of line is encountered
         ;
 xdigit:
         lodsb
         cmp al,0x20             ; Avoid spaces
         jz xdigit
         cmp al,0x00             ; Zero character marks end of line
-        je os15
+        je borrow_ret2
         cmp al,0x40
-        jnc os16
+        jnc .letter
         sub al,0x30
         stc
         ret
 
-os16:   sub al,0x37
+.letter:
+        sub al,0x37
         and al,0x0f
         stc
         ret
