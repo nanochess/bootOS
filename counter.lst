@@ -1,0 +1,85 @@
+     1                                          ;
+     2                                          ; Shows how to use bootOS services
+     3                                          ;
+     4                                          ; by Oscar Toledo G.
+     5                                          ; http://nanochess.org/
+     6                                          ;
+     7                                          ; Creation date: Jul/31/2019.
+     8                                          ;
+     9                                  
+    10                                          org 0x7c00
+    11                                  
+    12                                  name_segment:    equ 0x1000
+    13                                  name_address:    equ 0x0100
+    14                                  
+    15                                  data_segment:    equ 0x1100
+    16                                  data_address:    equ 0x0200
+    17                                  
+    18                                  start:
+    19 00000000 B80010                          mov ax,name_segment
+    20 00000003 8EC0                            mov es,ax
+    21                                  
+    22 00000005 BE[5F00]                        mov si,name
+    23 00000008 BF0001                          mov di,name_address
+    24 0000000B 89FB                            mov bx,di
+    25 0000000D B90900                          mov cx,9
+    26 00000010 F3A4                            rep movsb
+    27                                  
+    28 00000012 06                              push es
+    29 00000013 1F                              pop ds
+    30 00000014 B80011                          mov ax,data_segment
+    31 00000017 8EC0                            mov es,ax
+    32 00000019 BF0002                          mov di,data_address
+    33                                  
+    34 0000001C 53                              push bx
+    35 0000001D 1E                              push ds
+    36 0000001E 57                              push di
+    37 0000001F 06                              push es
+    38 00000020 CD23                            int 0x23                ; Load file.
+    39 00000022 1F                              pop ds
+    40 00000023 5F                              pop di
+    41 00000024 57                              push di
+    42 00000025 1E                              push ds
+    43 00000026 B02A                            mov al,'*'              ; Exists.
+    44 00000028 7306                            jnc .1
+    45 0000002A B03F                            mov al,'?'              ; Doesn't exist.
+    46 0000002C C7050000                        mov word [di],0x0000    ; Setup counter to zero.
+    47                                  .1:
+    48 00000030 CD22                            int 0x22                ; Output character
+    49                                  
+    50 00000032 8B05                            mov ax,[di]             ; Read data
+    51                                  
+    52 00000034 FEC0                            inc al                  ; Increase right digit.
+    53 00000036 3C0A                            cmp al,10               ; Is it 10?
+    54 00000038 750B                            jne .2                  ; No, jump.
+    55 0000003A B000                            mov al,0                ; Reset to zero.
+    56                                  
+    57 0000003C FEC4                            inc ah                  ; Increase left digit.
+    58 0000003E 80FC0A                          cmp ah,10               ; Is it 10?
+    59 00000041 7502                            jne .2                  ; No, jump.
+    60 00000043 B400                            mov ah,0                ; Reset to zero.
+    61                                  
+    62 00000045 8905                    .2:     mov [di],ax             ; Save data
+    63                                  
+    64 00000047 50                              push ax
+    65 00000048 88E0                            mov al,ah
+    66 0000004A 0430                            add al,'0'              ; Convert to ASCII
+    67 0000004C CD22                            int 0x22
+    68 0000004E 58                              pop ax
+    69                                  
+    70 0000004F 0430                            add al,'0'              ; Convert to ASCII
+    71 00000051 CD22                            int 0x22
+    72                                  
+    73 00000053 B00D                            mov al,0x0d             ; Go to next row on screen
+    74 00000055 CD22                            int 0x22
+    75                                  
+    76 00000057 07                              pop es
+    77 00000058 5F                              pop di
+    78 00000059 1F                              pop ds
+    79 0000005A 5B                              pop bx
+    80 0000005B CD24                            int 0x24                ; Save file
+    81                                  
+    82 0000005D CD20                            int 0x20                ; Return to bootOS
+    83                                  
+    84 0000005F 646174612E62696E00      name:   db "data.bin",0
+    85                                  
