@@ -326,13 +326,13 @@ load_file:
         push es
         call find_file  ; Find the file (sanitizes ES)
         mov ah,0x02     ; Read sector
-os25:
+shared_file:
         pop es
         pop bx          ; Restore destination on BX
-        jc int_cf       ; Jump if error
+        jc ret_cf       ; Jump if error
         call disk       ; Do operation with disk
                         ; Carry guaranteed to be clear.
-int_cf:
+ret_cf:
         mov bp,sp
         rcl byte [bp+4],1       ; Insert Carry flag in Flags (automatic usage of SS)
         iret
@@ -359,7 +359,7 @@ save_file:
         je .empty               ; Yes, jump and fill it.
         call next_entry
         jne .find
-        jmp os25
+        jmp shared_file
 
 .empty: push di
         rep movsb               ; Copy full name into directory
@@ -367,7 +367,7 @@ save_file:
         pop di
         call get_location       ; Get location of file
         mov ah,0x03             ; Write sector
-        jmp os25
+        jmp shared_file
 
         ;
         ; >> SERVICE <<
@@ -380,10 +380,10 @@ save_file:
         ;
 delete_file:
         call find_file          ; Find file (sanitizes ES)
-        jc int_cf               ; If carry set then not found, jump.
+        jc ret_cf               ; If carry set then not found, jump.
         mov cx,entry_size
         call write_zero_dir     ; Fill whole entry with zero. Write directory.
-        jmp int_cf
+        jmp ret_cf
 
         ;
         ; Find file
