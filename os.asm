@@ -168,6 +168,12 @@ max_entries:    equ sector_size/entry_size
         ;
         ; Cold start of bootOS
         ;
+        ; Notice it is loaded at 0x7c00 (boot) and needs to
+        ; relocate itself to 0x7a00 (osbase), the instructions
+        ; between 'start' and 'ver_command' shouldn't depend
+        ; on the assembly location (osbase) because these
+        ; are running at boot location (boot).
+        ;
         org osbase
 start:
         xor ax,ax       ; Set all segments to zero
@@ -185,10 +191,10 @@ start:
                         ; SI now points to int_0x20 
         mov di,0x0020*4 ; Address of service for int 0x20
         mov cl,6
-load_ivt:
+.load_vec:
         movsw           ; Copy IP address
         stosw           ; Copy CS address
-        loop load_ivt
+        loop .load_vec
 
         ;
         ; 'ver' command
