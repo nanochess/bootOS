@@ -293,22 +293,6 @@ os17:   add bx,entry_size       ; Advance one entry
         ret                     ; Return
 
         ;
-        ; >> COMMAND <<
-        ; format
-        ;
-format_command:
-        mov ah,0x03     ; Copy bootOS onto first sector
-        mov bx,osbase
-        mov cx,0x0001
-        call disk
-        mov di,sector   ; Fill whole sector to zero
-        mov cx,sector_size
-write_zero_dir:
-        mov al,0
-        rep stosb
-        jmp write_dir   ; Save it as directory
-
-        ;
         ; Get filename length and prepare for directory lookup
         ; Entry:
         ;   si = pointer to string
@@ -348,10 +332,11 @@ load_file:
 os25:
         pop es
         pop bx          ; Restore destination on BX
-        jc os24         ; Jump if error
+        jc int_cf       ; Jump if error
         call disk       ; Do operation with disk
                         ; Carry guaranteed to be clear.
-os24:   mov bp,sp
+int_cf:
+        mov bp,sp
         rcl byte [bp+4],1       ; Insert Carry flag in Flags (automatic usage of SS)
         iret
 
@@ -398,11 +383,10 @@ save_file:
         ;
 delete_file:
         call find_file          ; Find file (sanitizes ES)
-        jc os26                 ; If carry set then not found, jump.
+        jc int_cf               ; If carry set then not found, jump.
         mov cx,entry_size
         call write_zero_dir     ; Fill whole entry with zero. Write directory.
-os26:
-        jmp os24
+        jmp int_cf
 
         ;
         ; Find file
@@ -460,19 +444,36 @@ get_location:
         ret
 
         ;
+        ; >> COMMAND <<
+        ; format
+        ;
+format_command:
+        mov di,sector   ; Fill whole sector to zero
+        mov cx,sector_size
+        call write_zero_dir
+        mov bx,osbase   ; Copy bootOS onto first sector
+        dec cx
+        jmp disk
+
+        ;
         ; Read the directory from disk
         ;
 read_dir:
         push cs         ; bootOS code segment...
         pop es          ; ...to sanitize ES register
         mov ah,0x02
-        db 0xb9         ; jmp more_dir
-                        ; but instead MOV CX, to jump over opcode
+        jmp disk_dir
+
+write_zero_dir:
+        mov al,0
+        rep stosb
+
         ;
         ; Write the directory to disk
         ;
 write_dir:
         mov ah,0x03
+disk_dir:
         mov bx,sector
         mov cx,0x0002
         ;
@@ -496,7 +497,7 @@ disk:
         pop cx
         pop bx
         pop ax
-        jc disk
+        jc disk         ; Retry
         ret
 
         ;
@@ -513,8 +514,8 @@ input_line:
         mov di,si       ; Target for writing line
 os1:    cmp al,0x08     ; Backspace?
         jne os2
-        dec di
-        dec di
+        dec di          ; Undo the backspace write
+        dec di          ; Erase a character
 os2:    int int_input_key  ; Read keyboard
         cmp al,0x0d     ; CR pressed?
         jne os10
