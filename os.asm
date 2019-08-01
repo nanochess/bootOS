@@ -185,10 +185,10 @@ start:
         cld             ; Clear D flag.
         mov si,boot     ; Copy bootOS boot sector...
         mov di,osbase   ; ...into osbase
-        mov cx,int_0x20-start
+        mov cx,sector_size
         rep movsb
 
-                        ; SI now points to int_0x20 
+        mov si,int_0x20 ; SI now points to int_0x20 
         mov di,0x0020*4 ; Address of service for int 0x20
         mov cl,6
 .load_vec:
@@ -279,16 +279,13 @@ os22:
         ;
 dir_command:
         call read_dir           ; Read the directory
-
+        mov di,bx
 os18:
-        cmp byte [bx],0         ; Empty entry?
+        cmp byte [di],0         ; Empty entry?
         je os17                 ; Yes, jump
-        push bx
-        mov si,bx               ; Point to data
+        mov si,di               ; Point to data
         call output_string      ; Show name
-        pop bx
-os17:   add bx,entry_size       ; Advance one entry
-        cmp bh,(sector+sector_size)>>8       ; Finished sector?
+os17:   call next_entry
         jne os18                ; No, jump
         ret                     ; Return
 
