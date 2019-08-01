@@ -1,0 +1,7 @@
+*.asm text
+*.lst text
+LICENSE text
+Makefile text
+README text
+e.bat text
+*.img binary
