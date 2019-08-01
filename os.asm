@@ -155,8 +155,6 @@
         ; with the name osall.img
         ;
 
-        org 0x7c00
-
 stack:  equ 0x7700      ; Stack pointer (grows to lower addresses)
 line:   equ 0x7780      ; Buffer for line input
 sector: equ 0x7800      ; Sector data for directory
@@ -168,17 +166,9 @@ sector_size:    equ 512 ; Sector size
 max_entries:    equ sector_size/entry_size
 
         ;
-        ; Notice the mantra: label-boot+osbase
-        ;
-        ; This is because bootOS is assembled at boot sector
-        ; location but it will run at 0x7a00 (osbase label),
-        ; while the 0x7c00 location will be replaced by the
-        ; executed programs.
-        ;
-
-        ;
         ; Cold start of bootOS
         ;
+        org osbase
 start:
         xor ax,ax       ; Set all segments to zero
         mov ds,ax
@@ -191,19 +181,20 @@ start:
         mov di,osbase   ; ...into osbase
         mov cx,int_0x20-start
         rep movsb
+
                         ; SI now points to int_0x20 
         mov di,0x0020*4 ; Address of service for int 0x20
         mov cl,6
-os16:
+load_ivt:
         movsw           ; Copy IP address
         stosw           ; Copy CS address
-        loop os16
+        loop load_ivt
 
         ;
         ; 'ver' command
         ;
 ver_command:
-        mov si,intro-boot+osbase
+        mov si,intro
         call output_string
         int int_restart ; Restart bootOS
 
@@ -226,7 +217,7 @@ restart:
         cmp byte [si],0x00  ; Empty line?
         je restart          ; Yes, get another line
 
-        mov di,commands-boot+osbase ; Point to commands list
+        mov di,commands ; Point to commands list
 
         ; Notice that filenames starting with same characters
         ; won't be recognized as such (so file dirab cannot be
@@ -259,7 +250,7 @@ os12:   mov bx,si       ; Input pointer
         ; File not found error
         ;
 os7:
-        mov si,error_message-boot+osbase
+        mov si,error_message
         call output_string
         int int_restart ; Go to expect another command
 
@@ -627,15 +618,15 @@ error_message:
         ;
 commands:
         db 3,"dir"
-        dw dir_command-boot+osbase
+        dw dir_command
         db 6,"format"
-        dw format_command-boot+osbase
+        dw format_command
         db 5,"enter"
-        dw enter_command-boot+osbase
+        dw enter_command
         db 3,"del"
-        dw del_command-boot+osbase
+        dw del_command
         db 3,"ver"
-        dw ver_command-boot+osbase
+        dw ver_command
         db 0
 
 int_restart:            equ 0x20
@@ -646,12 +637,12 @@ int_save_file:          equ 0x24
 int_delete_file:        equ 0x25
 
 int_0x20:
-        dw restart-boot+osbase          ; int 0x20
-        dw input_key-boot+osbase        ; int 0x21
-        dw output_char-boot+osbase      ; int 0x22
-        dw load_file-boot+osbase        ; int 0x23
-        dw save_file-boot+osbase        ; int 0x24
-        dw delete_file-boot+osbase      ; int 0x25
+        dw restart          ; int 0x20
+        dw input_key        ; int 0x21
+        dw output_char      ; int 0x22
+        dw load_file        ; int 0x23
+        dw save_file        ; int 0x24
+        dw delete_file      ; int 0x25
 
         times 510-($-$$) db 0x4f
         db 0x55,0xaa            ; Make it a bootable sector
