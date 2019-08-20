@@ -153,6 +153,10 @@ bootOS programs: (Oh yes! we have software support)
   invaders      https://github.com/nanochess/invaders
   bootBASIC     https://github.com/nanochess/bootBASIC
         
+These programs provide a boot sector version and a COM
+file version. You need the boot sector version as the
+programs are loaded at address 0000:7c00.
+
 You can copy the machine code directly using the 'enter'
 command, or you can create a file with signature bytes
 with the same command and later copy the binary into the
