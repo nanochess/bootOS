@@ -152,7 +152,15 @@ bootOS programs: (Oh yes! we have software support)
   Pillman       https://github.com/nanochess/pillman
   invaders      https://github.com/nanochess/invaders
   bootBASIC     https://github.com/nanochess/bootBASIC
-        
+  Atomchess     https://github.com/nanochess/Toledo-Atomchess
+                (requires minimum 286 processor)
+
+Also our first 3rd party program!!!
+
+  bootSlide     https://github.com/XlogicX/BootSlide
+                (requires Pentium processor because
+                 it uses the rdtsc instruction)
+
 These programs provide a boot sector version and a COM
 file version. You need the boot sector version as the
 programs are loaded at address 0000:7c00.
