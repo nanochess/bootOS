@@ -158,8 +158,7 @@ bootOS programs: (Oh yes! we have software support)
 Also our first 3rd party program!!!
 
   bootSlide     https://github.com/XlogicX/BootSlide
-                (requires Pentium processor because
-                 it uses the rdtsc instruction)
+                (requires minimum 286 processor)
 
 These programs provide a boot sector version and a COM
 file version. You need the boot sector version as the
