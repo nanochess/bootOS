@@ -161,6 +161,10 @@ Also our first 3rd party programs!!!
                 (requires minimum 286 processor)
   tetranglix    https://github.com/XlogicX/tetranglix
                 (requires minimum 286 processor)
+  snake         https://gitlab.com/pmikkelsen/asm_snake
+                (requires minimum 286 processor)
+  mine          https://gitlab.com/blevy/boot-sector-minesweeper
+                (requires minimum Pentium II processor because rdtsc instruction)
 
 These programs provide a boot sector version and a COM
 file version. You need the boot sector version as the
