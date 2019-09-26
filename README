@@ -152,6 +152,7 @@ bootOS programs: (Oh yes! we have software support)
   Pillman       https://github.com/nanochess/pillman
   invaders      https://github.com/nanochess/invaders
   bootBASIC     https://github.com/nanochess/bootBASIC
+  bootRogue     https://github.com/nanochess/bootRogue
   Atomchess     https://github.com/nanochess/Toledo-Atomchess
                 (requires minimum 286 processor)
 
