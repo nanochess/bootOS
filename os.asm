@@ -412,7 +412,7 @@ os6:
         ret             ; Return
 
 next_entry:
-        add di,entry_size               ; Go to next entry.
+        add di,byte entry_size          ; Go to next entry.
         cmp di,sector+sector_size       ; Complete directory?
         stc                             ; Error, not found.
         ret
@@ -450,7 +450,7 @@ format_command:
         call write_zero_dir
         mov bx,osbase   ; Copy bootOS onto first sector
         dec cx
-        jmp disk
+        jmp short disk
 
         ;
         ; Read the directory from disk
@@ -459,7 +459,7 @@ read_dir:
         push cs         ; bootOS code segment...
         pop es          ; ...to sanitize ES register
         mov ah,0x02
-        jmp disk_dir
+        jmp short disk_dir
 
 write_zero_dir:
         mov al,0
