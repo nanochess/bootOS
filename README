@@ -148,6 +148,7 @@ For example: (Character + is Enter key)
         
 bootOS programs: (Oh yes! we have software support)
         
+  bricks        https://github.com/nanochess/bricks
   fbird         https://github.com/nanochess/fbird
   Pillman       https://github.com/nanochess/pillman
   invaders      https://github.com/nanochess/invaders
