@@ -169,7 +169,7 @@ max_entries:    equ sector_size/entry_size
         ; Cold start of bootOS
         ;
         ; Notice it is loaded at 0x7c00 (boot) and needs to
-        ; relocate itself to 0x7a00 (osbase), the instructions
+        ; relocate itself to 0x7a00 (osbase). The instructions
         ; between 'start' and 'ver_command' shouldn't depend
         ; on the assembly location (osbase) because these
         ; are running at boot location (boot).
@@ -390,7 +390,7 @@ delete_file:
         ;
         ; Entry:
         ;   ds:bx = Pointer to filename ended with zero byte.
-        ; Result:
+        ; Output:
         ;   es:di = Pointer to directory entry
         ;   Carry flag = Clear if found, set if not found.
 find_file:
@@ -423,13 +423,13 @@ next_entry:
         ; Entry:
         ;   DI = Pointer to entry in directory.
         ;
-        ; Result
+        ; Output:
         ;   CH = Track number in disk.
         ;   CL = Sector (always 0x01).
         ;
         ; The position of a file inside the disk depends on its
         ; position in the directory. The first entry goes to
-        ; track 1, the second entry to track 2 and so.
+        ; track 1, the second entry to track 2 and so on.
         ;
 get_location:
         lea ax,[di-(sector-entry_size)] ; Get entry pointer into directory
@@ -501,7 +501,7 @@ disk:
         ; Input line from keyboard
         ; Entry:
         ;   al = prompt character
-        ; Result:
+        ; Output:
         ;   buffer 'line' contains line, finished with CR
         ;   SI points to 'line'.
         ;
@@ -551,7 +551,7 @@ os3:
         ;   SI = address
         ;
         ; Implementation:
-        ;   It supposes that SI never points to a zero length string.
+        ;   It assumes that SI never points to a zero length string.
         ;
 output_string:
         lodsb                   ; Read character
