@@ -166,7 +166,7 @@ Also our first 3rd party programs!!!
                 (requires minimum 286 processor)
   snake         https://gitlab.com/pmikkelsen/asm_snake
                 (requires minimum 286 processor)
-  mine          https://gitlab.com/blevy/boot-sector-minesweeper
+  bootMine      https://github.com/io12/BootMine
                 (requires minimum Pentium II processor because rdtsc instruction)
   sokoban       https://ish.works/bootsector/bootsector.html
                 (requires minimum 286 processor)
