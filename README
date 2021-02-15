@@ -157,6 +157,7 @@ bootOS programs: (Oh yes! we have software support)
   bootRogue     https://github.com/nanochess/bootRogue
   Atomchess     https://github.com/nanochess/Toledo-Atomchess
                 (requires minimum 286 processor)
+  heart         https://github.com/nanochess/heart
 
 Also our first 3rd party programs!!!
 
@@ -189,6 +190,10 @@ Enjoy it!
 
 Special thanks to Jakub Kądziołka (NieDzejkob) for finding
 some bugs and suggesting enhancements.
+
+There's a bootOS fork by jakiki6 capable of running from
+an USB stick, and including many other changes.
+Download from: https://github.com/jakiki6/bootOS
 
 
 >> ATTENTION <<        
