@@ -158,6 +158,7 @@ bootOS programs: (Oh yes! we have software support)
   Atomchess     https://github.com/nanochess/Toledo-Atomchess
                 (requires minimum 286 processor)
   heart         https://github.com/nanochess/heart
+  pi            https://github.com/nanochess/pi
 
 Also our first 3rd party programs!!!
 
