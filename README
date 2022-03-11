@@ -159,6 +159,7 @@ bootOS programs: (Oh yes! we have software support)
                 (requires minimum 286 processor)
   heart         https://github.com/nanochess/heart
   pi            https://github.com/nanochess/pi
+  bootle        https://github.com/nanochess/bootle
 
 Also our first 3rd party programs!!!
 
