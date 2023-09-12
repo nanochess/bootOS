@@ -201,6 +201,7 @@ start:
         ;
 ver_command:
         mov si,intro
+print_then_restart:
         call output_string
         int int_restart ; Restart bootOS
 
@@ -241,8 +242,7 @@ os11:
         jmp restart     ; Go to expect another command
 
 os14:   add di,cx       ; Advance the list pointer
-        inc di          ; Avoid the address
-        inc di
+        scasw           ; Avoid the address
         pop si
         jmp os11        ; Compare another statement
 
@@ -257,8 +257,7 @@ os12:   mov bx,si       ; Input pointer
         ;
 os7:
         mov si,error_message
-        call output_string
-        int int_restart ; Go to expect another command
+        jmp print_then_restart
 
         ;
         ; >> COMMAND <<
