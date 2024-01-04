@@ -188,464 +188,468 @@
    188 00000012 B90002                          mov cx,sector_size
    189 00000015 F3A4                            rep movsb
    190                                  
-   191 00000017 BE[E801]                        mov si,int_0x20 ; SI now points to int_0x20 
-   192 0000001A BF8000                          mov di,0x0020*4 ; Address of service for int 0x20
-   193 0000001D B106                            mov cl,6
-   194                                  .load_vec:
-   195 0000001F A5                              movsw           ; Copy IP address
-   196 00000020 AB                              stosw           ; Copy CS address
-   197 00000021 E2FC                            loop .load_vec
-   198                                  
-   199                                          ;
-   200                                          ; 'ver' command
-   201                                          ;
-   202                                  ver_command:
-   203 00000023 BE[B801]                        mov si,intro
-   204                                  print_then_restart:
-   205 00000026 E84201                          call output_string
-   206 00000029 CD20                            int int_restart ; Restart bootOS
-   207                                  
-   208                                          ;
-   209                                          ; Warm start of bootOS
-   210                                          ;
-   211                                  restart:
-   212 0000002B FC                              cld             ; Clear D flag.
-   213 0000002C 0E                              push cs         ; Reinit all segment registers
-   214 0000002D 0E                              push cs
-   215 0000002E 0E                              push cs
-   216 0000002F 1F                              pop ds
-   217 00000030 07                              pop es
-   218 00000031 17                              pop ss
-   219 00000032 BC0077                          mov sp,stack    ; Restart stack
-   220                                  
-   221 00000035 B024                            mov al,'$'      ; Command prompt
-   222 00000037 E80201                          call input_line ; Input line
+   191                                          ; NOTE: we could avoid the need for setting SI here
+   192                                          ; by adjusting the length of the copy above, but that
+   193                                          ; would break the 'format' command.
+   194 00000017 BE[E601]                        mov si,int_0x20 ; SI now points to int_0x20
+   195 0000001A BF8000                          mov di,0x0020*4 ; Address of service for int 0x20
+   196 0000001D B106                            mov cl,6
+   197                                  .load_vec:
+   198 0000001F A5                              movsw           ; Copy IP address
+   199 00000020 AB                              stosw           ; Copy CS address
+   200 00000021 E2FC                            loop .load_vec
+   201                                  
+   202                                          ;
+   203                                          ; 'ver' command
+   204                                          ;
+   205                                  ver_command:
+   206 00000023 BE[B401]                        mov si,intro
+   207                                  print_then_restart:
+   208 00000026 E83E01                          call output_string
+   209 00000029 CD20                            int int_restart ; Restart bootOS
+   210                                  
+   211                                          ;
+   212                                          ; Warm start of bootOS
+   213                                          ;
+   214                                  restart:
+   215 0000002B FC                              cld             ; Clear D flag.
+   216 0000002C 0E                              push cs         ; Reinit all segment registers
+   217 0000002D 0E                              push cs
+   218 0000002E 0E                              push cs
+   219 0000002F 1F                              pop ds
+   220 00000030 07                              pop es
+   221 00000031 17                              pop ss
+   222 00000032 BC0077                          mov sp,stack    ; Restart stack
    223                                  
-   224 0000003A 803C00                          cmp byte [si],0x00  ; Empty line?
-   225 0000003D 74EC                            je restart          ; Yes, get another line
+   224 00000035 B024                            mov al,'$'      ; Command prompt
+   225 00000037 E8FE00                          call input_line ; Input line
    226                                  
-   227 0000003F BF[C401]                        mov di,commands ; Point to commands list
-   228                                  
-   229                                          ; Notice that filenames starting with same characters
-   230                                          ; won't be recognized as such (so file dirab cannot be
-   231                                          ; executed).
-   232                                  os11:
-   233 00000042 8A05                            mov al,[di]     ; Read length of command in chars
-   234 00000044 47                              inc di
-   235 00000045 25FF00                          and ax,0x00ff   ; Is it zero?
-   236 00000048 7410                            je os12         ; Yes, jump
-   237 0000004A 91                              xchg ax,cx
-   238 0000004B 56                              push si         ; Save current position
-   239 0000004C F3A6                            rep cmpsb       ; Compare statement
-   240 0000004E 7504                            jne os14        ; Equal? No, jump
-   241 00000050 FF15                            call word [di]  ; Call command process
-   242 00000052 EBD7                            jmp restart     ; Go to expect another command
-   243                                  
-   244 00000054 01CF                    os14:   add di,cx       ; Advance the list pointer
-   245 00000056 AF                              scasw           ; Avoid the address
-   246 00000057 5E                              pop si
-   247 00000058 EBE8                            jmp os11        ; Compare another statement
-   248                                  
-   249 0000005A 89F3                    os12:   mov bx,si       ; Input pointer
-   250 0000005C BF007C                          mov di,boot     ; Location to read data
-   251 0000005F CD23                            int int_load_file       ; Load file
-   252 00000061 7202                            jc os7          ; Jump if error
-   253 00000063 FFE3                            jmp bx
-   254                                  
-   255                                          ;
-   256                                          ; File not found error
-   257                                          ;
-   258                                  os7:
-   259 00000065 BE[BF01]                        mov si,error_message
-   260 00000068 EBBC                            jmp print_then_restart
-   261                                  
-   262                                          ;
-   263                                          ; >> COMMAND <<
-   264                                          ; del filename
+   227 0000003A 803C00                          cmp byte [si],0x00  ; Empty line?
+   228 0000003D 74EC                            je restart          ; Yes, get another line
+   229                                  
+   230 0000003F BF[C001]                        mov di,commands ; Point to commands list
+   231                                  
+   232                                          ; Notice that filenames starting with same characters
+   233                                          ; won't be recognized as such (so file dirab cannot be
+   234                                          ; executed).
+   235                                  os11:
+   236 00000042 8A0D                            mov cl,[di]     ; Read length of command in chars
+   237 00000044 47                              inc di
+   238 00000045 30ED                            xor ch, ch      ; Also makes sure that ZF = 1
+   239 00000047 56                              push si         ; Save current position
+   240 00000048 F3A6                            rep cmpsb       ; Compare statement
+   241 0000004A 7504                            jne os14        ; Equal? No, jump
+   242 0000004C FF15                            call word [di]  ; Call command process
+   243 0000004E EBDB                            jmp restart     ; Go to expect another command
+   244                                  
+   245 00000050 01CF                    os14:   add di,cx       ; Advance the list pointer
+   246 00000052 AF                              scasw           ; Avoid the address
+   247 00000053 5E                              pop si
+   248 00000054 EBEC                            jmp os11        ; Compare another statement
+   249                                  
+   250                                  exec_from_disk:
+   251 00000056 5B                              pop bx
+   252 00000057 5B                              pop bx
+   253 00000058 BF007C                          mov di,boot     ; Location to read data
+   254 0000005B CD23                            int int_load_file       ; Load file
+   255 0000005D 7202                            jc os7          ; Jump if error
+   256 0000005F FFE3                            jmp bx
+   257                                  
+   258                                          ;
+   259                                          ; File not found error
+   260                                          ;
+   261                                  os7:
+   262 00000061 BE[BB01]                        mov si,error_message
+   263 00000064 EBC0                            jmp print_then_restart
+   264                                  
    265                                          ;
-   266                                  del_command:
-   267                                  os22:
-   268 0000006A 89F3                            mov bx,si       ; Copy SI (buffer pointer) to BX
-   269 0000006C AC                              lodsb
-   270 0000006D 3C20                            cmp al,0x20     ; Avoid spaces
-   271 0000006F 74F9                            je os22
-   272 00000071 CD25                            int int_delete_file
-   273 00000073 72F0                            jc os7
-   274 00000075 C3                              ret
-   275                                  
-   276                                          ;
-   277                                          ; 'dir' command
-   278                                          ;
-   279                                  dir_command:
-   280 00000076 E8A000                          call read_dir           ; Read the directory
-   281 00000079 89DF                            mov di,bx
-   282                                  os18:
-   283 0000007B 803D00                          cmp byte [di],0         ; Empty entry?
-   284 0000007E 7405                            je os17                 ; Yes, jump
-   285 00000080 89FE                            mov si,di               ; Point to data
-   286 00000082 E8E600                          call output_string      ; Show name
-   287 00000085 E86E00                  os17:   call next_entry
-   288 00000088 75F1                            jne os18                ; No, jump
-   289 0000008A C3                              ret                     ; Return
-   290                                  
-   291                                          ;
-   292                                          ; Get filename length and prepare for directory lookup
-   293                                          ; Entry:
-   294                                          ;   si = pointer to string
-   295                                          ; Output:
-   296                                          ;   si = unaffected
-   297                                          ;   di = pointer to start of directory
-   298                                          ;   cx = length of filename including zero terminator
-   299                                          ;
-   300                                  filename_length:
-   301 0000008B 56                              push si
-   302 0000008C 31C9                            xor cx,cx       ; cx = 0
-   303                                  .loop:
-   304 0000008E AC                              lodsb           ; Read character.
-   305 0000008F 41                              inc cx          ; Count character.
-   306 00000090 3C00                            cmp al,0        ; Is it zero (end character)?
-   307 00000092 75FA                            jne .loop       ; No, jump.
-   308                                  
-   309 00000094 5E                              pop si
-   310 00000095 BF0078                          mov di,sector   ; Point to start of directory.
-   311 00000098 C3                              ret
-   312                                          
-   313                                          ;
-   314                                          ; >> SERVICE <<
-   315                                          ; Load file
+   266                                          ; >> COMMAND <<
+   267                                          ; del filename
+   268                                          ;
+   269                                  del_command:
+   270                                  os22:
+   271 00000066 89F3                            mov bx,si       ; Copy SI (buffer pointer) to BX
+   272 00000068 AC                              lodsb
+   273 00000069 3C20                            cmp al,0x20     ; Avoid spaces
+   274 0000006B 74F9                            je os22
+   275 0000006D CD25                            int int_delete_file
+   276 0000006F 72F0                            jc os7
+   277 00000071 C3                              ret
+   278                                  
+   279                                          ;
+   280                                          ; 'dir' command
+   281                                          ;
+   282                                  dir_command:
+   283 00000072 E8A000                          call read_dir           ; Read the directory
+   284 00000075 89DF                            mov di,bx
+   285                                  os18:
+   286 00000077 803D00                          cmp byte [di],0         ; Empty entry?
+   287 0000007A 7405                            je os17                 ; Yes, jump
+   288 0000007C 89FE                            mov si,di               ; Point to data
+   289 0000007E E8E600                          call output_string      ; Show name
+   290 00000081 E86E00                  os17:   call next_entry
+   291 00000084 75F1                            jne os18                ; No, jump
+   292 00000086 C3                              ret                     ; Return
+   293                                  
+   294                                          ;
+   295                                          ; Get filename length and prepare for directory lookup
+   296                                          ; Entry:
+   297                                          ;   si = pointer to string
+   298                                          ; Output:
+   299                                          ;   si = unaffected
+   300                                          ;   di = pointer to start of directory
+   301                                          ;   cx = length of filename including zero terminator
+   302                                          ;
+   303                                  filename_length:
+   304 00000087 56                              push si
+   305 00000088 31C9                            xor cx,cx       ; cx = 0
+   306                                  .loop:
+   307 0000008A AC                              lodsb           ; Read character.
+   308 0000008B 41                              inc cx          ; Count character.
+   309 0000008C 3C00                            cmp al,0        ; Is it zero (end character)?
+   310 0000008E 75FA                            jne .loop       ; No, jump.
+   311                                  
+   312 00000090 5E                              pop si
+   313 00000091 BF0078                          mov di,sector   ; Point to start of directory.
+   314 00000094 C3                              ret
+   315                                          
    316                                          ;
-   317                                          ; Entry:
-   318                                          ;   ds:bx = Pointer to filename ended with zero byte.
-   319                                          ;   es:di = Destination.
-   320                                          ; Output:
-   321                                          ;   Carry flag = Set = not found, clear = successful.
-   322                                          ;
-   323                                  load_file:
-   324 00000099 57                              push di         ; Save destination
-   325 0000009A 06                              push es
-   326 0000009B E84000                          call find_file  ; Find the file (sanitizes ES)
-   327 0000009E B402                            mov ah,0x02     ; Read sector
-   328                                  shared_file:
-   329 000000A0 07                              pop es
-   330 000000A1 5B                              pop bx          ; Restore destination on BX
-   331 000000A2 7203                            jc ret_cf       ; Jump if error
-   332 000000A4 E88400                          call disk       ; Do operation with disk
-   333                                                          ; Carry guaranteed to be clear.
-   334                                  ret_cf:
-   335 000000A7 89E5                            mov bp,sp
-   336 000000A9 D05604                          rcl byte [bp+4],1       ; Insert Carry flag in Flags (automatic usage of SS)
-   337 000000AC CF                              iret
-   338                                  
-   339                                          ;
-   340                                          ; >> SERVICE <<
-   341                                          ; Save file
+   317                                          ; >> SERVICE <<
+   318                                          ; Load file
+   319                                          ;
+   320                                          ; Entry:
+   321                                          ;   ds:bx = Pointer to filename ended with zero byte.
+   322                                          ;   es:di = Destination.
+   323                                          ; Output:
+   324                                          ;   Carry flag = Set = not found, clear = successful.
+   325                                          ;
+   326                                  load_file:
+   327 00000095 57                              push di         ; Save destination
+   328 00000096 06                              push es
+   329 00000097 E84000                          call find_file  ; Find the file (sanitizes ES)
+   330 0000009A B402                            mov ah,0x02     ; Read sector
+   331                                  shared_file:
+   332 0000009C 07                              pop es
+   333 0000009D 5B                              pop bx          ; Restore destination on BX
+   334 0000009E 7203                            jc ret_cf       ; Jump if error
+   335 000000A0 E88400                          call disk       ; Do operation with disk
+   336                                                          ; Carry guaranteed to be clear.
+   337                                  ret_cf:
+   338 000000A3 89E5                            mov bp,sp
+   339 000000A5 D05604                          rcl byte [bp+4],1       ; Insert Carry flag in Flags (automatic usage of SS)
+   340 000000A8 CF                              iret
+   341                                  
    342                                          ;
-   343                                          ; Entry:
-   344                                          ;   ds:bx = Pointer to filename ended with zero byte.
-   345                                          ;   es:di = Source.
-   346                                          ; Output:
-   347                                          ;   Carry flag = Set = error, clear = good.
-   348                                          ;
-   349                                  save_file:
-   350 000000AD 57                              push di                 ; Save origin
-   351 000000AE 06                              push es
-   352 000000AF 53                              push bx                 ; Save filename pointer
-   353 000000B0 CD25                            int int_delete_file     ; Delete previous file (sanitizes ES)
-   354 000000B2 5B                              pop bx                  ; Restore filename pointer
-   355 000000B3 E8D5FF                          call filename_length    ; Prepare for lookup
-   356                                  
-   357 000000B6 26803D00                .find:  es cmp byte [di],0      ; Found empty directory entry?
-   358 000000BA 7407                            je .empty               ; Yes, jump and fill it.
-   359 000000BC E83700                          call next_entry
-   360 000000BF 75F5                            jne .find
-   361 000000C1 EBDD                            jmp shared_file
-   362                                  
-   363 000000C3 57                      .empty: push di
-   364 000000C4 F3A4                            rep movsb               ; Copy full name into directory
-   365 000000C6 E85A00                          call write_dir          ; Save directory
-   366 000000C9 5F                              pop di
-   367 000000CA E83200                          call get_location       ; Get location of file
-   368 000000CD B403                            mov ah,0x03             ; Write sector
-   369 000000CF EBCF                            jmp shared_file
-   370                                  
-   371                                          ;
-   372                                          ; >> SERVICE <<
-   373                                          ; Delete file
+   343                                          ; >> SERVICE <<
+   344                                          ; Save file
+   345                                          ;
+   346                                          ; Entry:
+   347                                          ;   ds:bx = Pointer to filename ended with zero byte.
+   348                                          ;   es:di = Source.
+   349                                          ; Output:
+   350                                          ;   Carry flag = Set = error, clear = good.
+   351                                          ;
+   352                                  save_file:
+   353 000000A9 57                              push di                 ; Save origin
+   354 000000AA 06                              push es
+   355 000000AB 53                              push bx                 ; Save filename pointer
+   356 000000AC CD25                            int int_delete_file     ; Delete previous file (sanitizes ES)
+   357 000000AE 5B                              pop bx                  ; Restore filename pointer
+   358 000000AF E8D5FF                          call filename_length    ; Prepare for lookup
+   359                                  
+   360 000000B2 26803D00                .find:  es cmp byte [di],0      ; Found empty directory entry?
+   361 000000B6 7407                            je .empty               ; Yes, jump and fill it.
+   362 000000B8 E83700                          call next_entry
+   363 000000BB 75F5                            jne .find
+   364 000000BD EBDD                            jmp shared_file
+   365                                  
+   366 000000BF 57                      .empty: push di
+   367 000000C0 F3A4                            rep movsb               ; Copy full name into directory
+   368 000000C2 E85A00                          call write_dir          ; Save directory
+   369 000000C5 5F                              pop di
+   370 000000C6 E83200                          call get_location       ; Get location of file
+   371 000000C9 B403                            mov ah,0x03             ; Write sector
+   372 000000CB EBCF                            jmp shared_file
+   373                                  
    374                                          ;
-   375                                          ; Entry:
-   376                                          ;   ds:bx = Pointer to filename ended with zero byte.
-   377                                          ; Output:
-   378                                          ;   Carry flag = Set = not found, clear = deleted.
-   379                                          ;
-   380                                  delete_file:
-   381 000000D1 E80A00                          call find_file          ; Find file (sanitizes ES)
-   382 000000D4 72D1                            jc ret_cf               ; If carry set then not found, jump.
-   383 000000D6 B91000                          mov cx,entry_size
-   384 000000D9 E84300                          call write_zero_dir     ; Fill whole entry with zero. Write directory.
-   385 000000DC EBC9                            jmp ret_cf
-   386                                  
-   387                                          ;
-   388                                          ; Find file
-   389                                          ;
-   390                                          ; Entry:
-   391                                          ;   ds:bx = Pointer to filename ended with zero byte.
-   392                                          ; Output:
-   393                                          ;   es:di = Pointer to directory entry
-   394                                          ;   Carry flag = Clear if found, set if not found.
-   395                                  find_file:
-   396 000000DE 53                              push bx
-   397 000000DF E83700                          call read_dir   ; Read directory (sanitizes ES)
-   398 000000E2 5E                              pop si
-   399 000000E3 E8A5FF                          call filename_length    ; Get filename length and setup DI
-   400                                  os6:
-   401 000000E6 56                              push si
-   402 000000E7 57                              push di
-   403 000000E8 51                              push cx
-   404 000000E9 F3A6                            repe cmpsb      ; Compare name with entry
-   405 000000EB 59                              pop cx
-   406 000000EC 5F                              pop di
-   407 000000ED 5E                              pop si
-   408 000000EE 740F                            je get_location ; Jump if equal.
-   409 000000F0 E80300                          call next_entry
-   410 000000F3 75F1                            jne os6         ; No, jump
-   411 000000F5 C3                              ret             ; Return
-   412                                  
-   413                                  next_entry:
-   414 000000F6 83C710                          add di,byte entry_size          ; Go to next entry.
-   415 000000F9 81FF007A                        cmp di,sector+sector_size       ; Complete directory?
-   416 000000FD F9                              stc                             ; Error, not found.
-   417 000000FE C3                              ret
-   418                                  
-   419                                          ;
-   420                                          ; Get location of file on disk
-   421                                          ;
-   422                                          ; Entry:
-   423                                          ;   DI = Pointer to entry in directory.
+   375                                          ; >> SERVICE <<
+   376                                          ; Delete file
+   377                                          ;
+   378                                          ; Entry:
+   379                                          ;   ds:bx = Pointer to filename ended with zero byte.
+   380                                          ; Output:
+   381                                          ;   Carry flag = Set = not found, clear = deleted.
+   382                                          ;
+   383                                  delete_file:
+   384 000000CD E80A00                          call find_file          ; Find file (sanitizes ES)
+   385 000000D0 72D1                            jc ret_cf               ; If carry set then not found, jump.
+   386 000000D2 B91000                          mov cx,entry_size
+   387 000000D5 E84300                          call write_zero_dir     ; Fill whole entry with zero. Write directory.
+   388 000000D8 EBC9                            jmp ret_cf
+   389                                  
+   390                                          ;
+   391                                          ; Find file
+   392                                          ;
+   393                                          ; Entry:
+   394                                          ;   ds:bx = Pointer to filename ended with zero byte.
+   395                                          ; Output:
+   396                                          ;   es:di = Pointer to directory entry
+   397                                          ;   Carry flag = Clear if found, set if not found.
+   398                                  find_file:
+   399 000000DA 53                              push bx
+   400 000000DB E83700                          call read_dir   ; Read directory (sanitizes ES)
+   401 000000DE 5E                              pop si
+   402 000000DF E8A5FF                          call filename_length    ; Get filename length and setup DI
+   403                                  os6:
+   404 000000E2 56                              push si
+   405 000000E3 57                              push di
+   406 000000E4 51                              push cx
+   407 000000E5 F3A6                            repe cmpsb      ; Compare name with entry
+   408 000000E7 59                              pop cx
+   409 000000E8 5F                              pop di
+   410 000000E9 5E                              pop si
+   411 000000EA 740F                            je get_location ; Jump if equal.
+   412 000000EC E80300                          call next_entry
+   413 000000EF 75F1                            jne os6         ; No, jump
+   414 000000F1 C3                              ret             ; Return
+   415                                  
+   416                                  next_entry:
+   417 000000F2 83C710                          add di,byte entry_size          ; Go to next entry.
+   418 000000F5 81FF007A                        cmp di,sector+sector_size       ; Complete directory?
+   419 000000F9 F9                              stc                             ; Error, not found.
+   420 000000FA C3                              ret
+   421                                  
+   422                                          ;
+   423                                          ; Get location of file on disk
    424                                          ;
-   425                                          ; Output:
-   426                                          ;   CH = Track number in disk.
-   427                                          ;   CL = Sector (always 0x01).
-   428                                          ;
-   429                                          ; The position of a file inside the disk depends on its
-   430                                          ; position in the directory. The first entry goes to
-   431                                          ; track 1, the second entry to track 2 and so on.
-   432                                          ;
-   433                                  get_location:
-   434 000000FF 8D851088                        lea ax,[di-(sector-entry_size)] ; Get entry pointer into directory
-   435                                                          ; Plus one entry (files start on track 1)
-   436 00000103 B104                            mov cl,4        ; 2^(8-4) = entry_size
-   437 00000105 D3E0                            shl ax,cl       ; Shift left and clear Carry flag
-   438 00000107 40                              inc ax          ; AL = Sector 1
-   439 00000108 91                              xchg ax,cx      ; CH = Track, CL = Sector
-   440 00000109 C3                              ret
-   441                                  
-   442                                          ;
-   443                                          ; >> COMMAND <<
-   444                                          ; format
+   425                                          ; Entry:
+   426                                          ;   DI = Pointer to entry in directory.
+   427                                          ;
+   428                                          ; Output:
+   429                                          ;   CH = Track number in disk.
+   430                                          ;   CL = Sector (always 0x01).
+   431                                          ;
+   432                                          ; The position of a file inside the disk depends on its
+   433                                          ; position in the directory. The first entry goes to
+   434                                          ; track 1, the second entry to track 2 and so on.
+   435                                          ;
+   436                                  get_location:
+   437 000000FB 8D851088                        lea ax,[di-(sector-entry_size)] ; Get entry pointer into directory
+   438                                                          ; Plus one entry (files start on track 1)
+   439 000000FF B104                            mov cl,4        ; 2^(8-4) = entry_size
+   440 00000101 D3E0                            shl ax,cl       ; Shift left and clear Carry flag
+   441 00000103 40                              inc ax          ; AL = Sector 1
+   442 00000104 91                              xchg ax,cx      ; CH = Track, CL = Sector
+   443 00000105 C3                              ret
+   444                                  
    445                                          ;
-   446                                  format_command:
-   447 0000010A BF0078                          mov di,sector   ; Fill whole sector to zero
-   448 0000010D B90002                          mov cx,sector_size
-   449 00000110 E80C00                          call write_zero_dir
-   450 00000113 BB007A                          mov bx,osbase   ; Copy bootOS onto first sector
-   451 00000116 49                              dec cx
-   452 00000117 EB12                            jmp short disk
-   453                                  
-   454                                          ;
-   455                                          ; Read the directory from disk
-   456                                          ;
-   457                                  read_dir:
-   458 00000119 0E                              push cs         ; bootOS code segment...
-   459 0000011A 07                              pop es          ; ...to sanitize ES register
-   460 0000011B B402                            mov ah,0x02
-   461 0000011D EB06                            jmp short disk_dir
-   462                                  
-   463                                  write_zero_dir:
-   464 0000011F B000                            mov al,0
-   465 00000121 F3AA                            rep stosb
-   466                                  
-   467                                          ;
-   468                                          ; Write the directory to disk
-   469                                          ;
-   470                                  write_dir:
-   471 00000123 B403                            mov ah,0x03
-   472                                  disk_dir:
-   473 00000125 BB0078                          mov bx,sector
-   474 00000128 B90200                          mov cx,0x0002
-   475                                          ;
-   476                                          ; Do disk operation.
-   477                                          ;
-   478                                          ; Input:
-   479                                          ;   AH = 0x02 read disk, 0x03 write disk
-   480                                          ;   ES:BX = data source/target
-   481                                          ;   CH = Track number
-   482                                          ;   CL = Sector number
-   483                                          ;
-   484                                  disk:
-   485 0000012B 50                              push ax
-   486 0000012C 53                              push bx
-   487 0000012D 51                              push cx
-   488 0000012E 06                              push es
-   489 0000012F B001                            mov al,0x01     ; AL = 1 sector
-   490 00000131 31D2                            xor dx,dx       ; DH = Drive A. DL = Head 0.
-   491 00000133 CD13                            int 0x13
-   492 00000135 07                              pop es
-   493 00000136 59                              pop cx
-   494 00000137 5B                              pop bx
-   495 00000138 58                              pop ax
-   496 00000139 72F0                            jc disk         ; Retry
-   497 0000013B C3                              ret
-   498                                  
-   499                                          ;
-   500                                          ; Input line from keyboard
-   501                                          ; Entry:
-   502                                          ;   al = prompt character
-   503                                          ; Output:
-   504                                          ;   buffer 'line' contains line, finished with CR
-   505                                          ;   SI points to 'line'.
-   506                                          ;
-   507                                  input_line:
-   508 0000013C CD22                            int int_output_char ; Output prompt character
-   509 0000013E BE8077                          mov si,line     ; Setup SI and DI to start of line buffer
-   510 00000141 89F7                            mov di,si       ; Target for writing line
-   511 00000143 3C08                    os1:    cmp al,0x08     ; Backspace?
-   512 00000145 7502                            jne os2
-   513 00000147 4F                              dec di          ; Undo the backspace write
-   514 00000148 4F                              dec di          ; Erase a character
-   515 00000149 CD21                    os2:    int int_input_key  ; Read keyboard
-   516 0000014B 3C0D                            cmp al,0x0d     ; CR pressed?
-   517 0000014D 7502                            jne os10
-   518 0000014F B000                            mov al,0x00
-   519 00000151 AA                      os10:   stosb           ; Save key in buffer
-   520 00000152 75EF                            jne os1         ; No, wait another key
-   521 00000154 C3                              ret             ; Yes, return
-   522                                  
-   523                                          ;
-   524                                          ; Read a key into al
-   525                                          ; Also outputs it to screen
+   446                                          ; >> COMMAND <<
+   447                                          ; format
+   448                                          ;
+   449                                  format_command:
+   450 00000106 BF0078                          mov di,sector   ; Fill whole sector to zero
+   451 00000109 B90002                          mov cx,sector_size
+   452 0000010C E80C00                          call write_zero_dir
+   453 0000010F BB007A                          mov bx,osbase   ; Copy bootOS onto first sector
+   454 00000112 49                              dec cx
+   455 00000113 EB12                            jmp short disk
+   456                                  
+   457                                          ;
+   458                                          ; Read the directory from disk
+   459                                          ;
+   460                                  read_dir:
+   461 00000115 0E                              push cs         ; bootOS code segment...
+   462 00000116 07                              pop es          ; ...to sanitize ES register
+   463 00000117 B402                            mov ah,0x02
+   464 00000119 EB06                            jmp short disk_dir
+   465                                  
+   466                                  write_zero_dir:
+   467 0000011B B000                            mov al,0
+   468 0000011D F3AA                            rep stosb
+   469                                  
+   470                                          ;
+   471                                          ; Write the directory to disk
+   472                                          ;
+   473                                  write_dir:
+   474 0000011F B403                            mov ah,0x03
+   475                                  disk_dir:
+   476 00000121 BB0078                          mov bx,sector
+   477 00000124 B90200                          mov cx,0x0002
+   478                                          ;
+   479                                          ; Do disk operation.
+   480                                          ;
+   481                                          ; Input:
+   482                                          ;   AH = 0x02 read disk, 0x03 write disk
+   483                                          ;   ES:BX = data source/target
+   484                                          ;   CH = Track number
+   485                                          ;   CL = Sector number
+   486                                          ;
+   487                                  disk:
+   488 00000127 50                              push ax
+   489 00000128 53                              push bx
+   490 00000129 51                              push cx
+   491 0000012A 06                              push es
+   492 0000012B B001                            mov al,0x01     ; AL = 1 sector
+   493 0000012D 31D2                            xor dx,dx       ; DH = Drive A. DL = Head 0.
+   494 0000012F CD13                            int 0x13
+   495 00000131 07                              pop es
+   496 00000132 59                              pop cx
+   497 00000133 5B                              pop bx
+   498 00000134 58                              pop ax
+   499 00000135 72F0                            jc disk         ; Retry
+   500 00000137 C3                              ret
+   501                                  
+   502                                          ;
+   503                                          ; Input line from keyboard
+   504                                          ; Entry:
+   505                                          ;   al = prompt character
+   506                                          ; Output:
+   507                                          ;   buffer 'line' contains line, finished with CR
+   508                                          ;   SI points to 'line'.
+   509                                          ;
+   510                                  input_line:
+   511 00000138 CD22                            int int_output_char ; Output prompt character
+   512 0000013A BE8077                          mov si,line     ; Setup SI and DI to start of line buffer
+   513 0000013D 89F7                            mov di,si       ; Target for writing line
+   514 0000013F 3C08                    os1:    cmp al,0x08     ; Backspace?
+   515 00000141 7502                            jne os2
+   516 00000143 4F                              dec di          ; Undo the backspace write
+   517 00000144 4F                              dec di          ; Erase a character
+   518 00000145 CD21                    os2:    int int_input_key  ; Read keyboard
+   519 00000147 3C0D                            cmp al,0x0d     ; CR pressed?
+   520 00000149 7502                            jne os10
+   521 0000014B B000                            mov al,0x00
+   522 0000014D AA                      os10:   stosb           ; Save key in buffer
+   523 0000014E 75EF                            jne os1         ; No, wait another key
+   524 00000150 C3                              ret             ; Yes, return
+   525                                  
    526                                          ;
-   527                                  input_key:
-   528 00000155 B400                            mov ah,0x00
-   529 00000157 CD16                            int 0x16
-   530                                          ;
-   531                                          ; Screen output of character contained in al
-   532                                          ; Expands 0x0d (CR) into 0x0a 0x0d (LF CR)
+   527                                          ; Read a key into al
+   528                                          ; Also outputs it to screen
+   529                                          ;
+   530                                  input_key:
+   531 00000151 B400                            mov ah,0x00
+   532 00000153 CD16                            int 0x16
    533                                          ;
-   534                                  output_char:
-   535 00000159 3C0D                            cmp al,0x0d
-   536 0000015B 7506                            jne os3
-   537 0000015D B00A                            mov al,0x0a
-   538 0000015F CD22                            int int_output_char
-   539 00000161 B00D                            mov al,0x0d
-   540                                  os3:
-   541 00000163 B40E                            mov ah,0x0e     ; Output character to TTY
-   542 00000165 BB0700                          mov bx,0x0007   ; Gray. Required for graphic modes
-   543 00000168 CD10                            int 0x10        ; BIOS int 0x10 = Video
-   544 0000016A CF                              iret
-   545                                  
-   546                                          ;
-   547                                          ; Output string
-   548                                          ;
-   549                                          ; Entry:
-   550                                          ;   SI = address
+   534                                          ; Screen output of character contained in al
+   535                                          ; Expands 0x0d (CR) into 0x0a 0x0d (LF CR)
+   536                                          ;
+   537                                  output_char:
+   538 00000155 3C0D                            cmp al,0x0d
+   539 00000157 7506                            jne os3
+   540 00000159 B00A                            mov al,0x0a
+   541 0000015B CD22                            int int_output_char
+   542 0000015D B00D                            mov al,0x0d
+   543                                  os3:
+   544 0000015F B40E                            mov ah,0x0e     ; Output character to TTY
+   545 00000161 BB0700                          mov bx,0x0007   ; Gray. Required for graphic modes
+   546 00000164 CD10                            int 0x10        ; BIOS int 0x10 = Video
+   547 00000166 CF                              iret
+   548                                  
+   549                                          ;
+   550                                          ; Output string
    551                                          ;
-   552                                          ; Implementation:
-   553                                          ;   It assumes that SI never points to a zero length string.
+   552                                          ; Entry:
+   553                                          ;   SI = address
    554                                          ;
-   555                                  output_string:
-   556 0000016B AC                              lodsb                   ; Read character
-   557 0000016C CD22                            int int_output_char     ; Output to screen
-   558 0000016E 3C00                            cmp al,0x00             ; Is it 0x00 (terminator)?
-   559 00000170 75F9                            jne output_string       ; No, the loop continues
-   560 00000172 B00D                            mov al,0x0d
-   561 00000174 CD22                            int int_output_char
-   562 00000176 C3                              ret
-   563                                  
-   564                                          ;
-   565                                          ; 'enter' command
-   566                                          ;
-   567                                  enter_command:
-   568 00000177 BF007C                          mov di,boot             ; Point to boot sector
-   569 0000017A 57                      os23:   push di
-   570 0000017B B068                            mov al,'h'              ; Prompt character
-   571 0000017D E8BCFF                          call input_line         ; Input line
-   572 00000180 5F                              pop di
-   573 00000181 803C00                          cmp byte [si],0         ; Empty line?
-   574 00000184 7412                            je os20                 ; Yes, jump
-   575 00000186 E81C00                  os19:   call xdigit             ; Get a hexadecimal digit
-   576 00000189 73EF                            jnc os23
-   577 0000018B B104                            mov cl,4
-   578 0000018D D2E0                            shl al,cl
-   579 0000018F 91                              xchg ax,cx
-   580 00000190 E81200                          call xdigit             ; Get a hexadecimal digit
-   581 00000193 08C8                            or al,cl
-   582 00000195 AA                              stosb                   ; Write one byte
-   583 00000196 EBEE                            jmp os19                ; Repeat loop to complete line
-   584                                  os20:        
-   585 00000198 B02A                            mov al,'*'              ; Prompt character
-   586 0000019A E89FFF                          call input_line         ; Input line with filename
-   587 0000019D 56                              push si
-   588 0000019E 5B                              pop bx
-   589 0000019F BF007C                          mov di,boot             ; Point to data entered
-   590 000001A2 CD24                            int int_save_file       ; Save new file
-   591 000001A4 C3                              ret
-   592                                  
-   593                                          ;
-   594                                          ; Convert ASCII letter to hexadecimal digit
-   595                                          ;
-   596                                  xdigit:
-   597 000001A5 AC                              lodsb
-   598 000001A6 3C00                            cmp al,0x00             ; Zero character marks end of line
-   599 000001A8 740D                            je os15
-   600 000001AA 2C30                            sub al,0x30             ; Avoid spaces (anything below ASCII 0x30)
-   601 000001AC 72F7                            jc xdigit
-   602 000001AE 3C0A                            cmp al,0x0a
-   603 000001B0 7205                            jc os15
-   604 000001B2 2C07                            sub al,0x07
-   605 000001B4 240F                            and al,0x0f
-   606 000001B6 F9                              stc
-   607                                  os15:
-   608 000001B7 C3                              ret
-   609                                  
-   610                                          ;
-   611                                          ; Our amazing presentation line
-   612                                          ;
-   613                                  intro:
-   614 000001B8 626F6F744F5300                  db "bootOS",0
-   615                                  
-   616                                  error_message:
-   617 000001BF 4F6F707300                      db "Oops",0
+   555                                          ; Implementation:
+   556                                          ;   It assumes that SI never points to a zero length string.
+   557                                          ;
+   558                                  output_string:
+   559 00000167 AC                              lodsb                   ; Read character
+   560 00000168 CD22                            int int_output_char     ; Output to screen
+   561 0000016A 3C00                            cmp al,0x00             ; Is it 0x00 (terminator)?
+   562 0000016C 75F9                            jne output_string       ; No, the loop continues
+   563 0000016E B00D                            mov al,0x0d
+   564 00000170 CD22                            int int_output_char
+   565 00000172 C3                              ret
+   566                                  
+   567                                          ;
+   568                                          ; 'enter' command
+   569                                          ;
+   570                                  enter_command:
+   571 00000173 BF007C                          mov di,boot             ; Point to boot sector
+   572 00000176 57                      os23:   push di
+   573 00000177 B068                            mov al,'h'              ; Prompt character
+   574 00000179 E8BCFF                          call input_line         ; Input line
+   575 0000017C 5F                              pop di
+   576 0000017D 803C00                          cmp byte [si],0         ; Empty line?
+   577 00000180 7412                            je os20                 ; Yes, jump
+   578 00000182 E81C00                  os19:   call xdigit             ; Get a hexadecimal digit
+   579 00000185 73EF                            jnc os23
+   580 00000187 B104                            mov cl,4
+   581 00000189 D2E0                            shl al,cl
+   582 0000018B 91                              xchg ax,cx
+   583 0000018C E81200                          call xdigit             ; Get a hexadecimal digit
+   584 0000018F 08C8                            or al,cl
+   585 00000191 AA                              stosb                   ; Write one byte
+   586 00000192 EBEE                            jmp os19                ; Repeat loop to complete line
+   587                                  os20:        
+   588 00000194 B02A                            mov al,'*'              ; Prompt character
+   589 00000196 E89FFF                          call input_line         ; Input line with filename
+   590 00000199 56                              push si
+   591 0000019A 5B                              pop bx
+   592 0000019B BF007C                          mov di,boot             ; Point to data entered
+   593 0000019E CD24                            int int_save_file       ; Save new file
+   594 000001A0 C3                              ret
+   595                                  
+   596                                          ;
+   597                                          ; Convert ASCII letter to hexadecimal digit
+   598                                          ;
+   599                                  xdigit:
+   600 000001A1 AC                              lodsb
+   601 000001A2 3C00                            cmp al,0x00             ; Zero character marks end of line
+   602 000001A4 740D                            je os15
+   603 000001A6 2C30                            sub al,0x30             ; Avoid spaces (anything below ASCII 0x30)
+   604 000001A8 72F7                            jc xdigit
+   605 000001AA 3C0A                            cmp al,0x0a
+   606 000001AC 7205                            jc os15
+   607 000001AE 2C07                            sub al,0x07
+   608 000001B0 240F                            and al,0x0f
+   609 000001B2 F9                              stc
+   610                                  os15:
+   611 000001B3 C3                              ret
+   612                                  
+   613                                          ;
+   614                                          ; Our amazing presentation line
+   615                                          ;
+   616                                  intro:
+   617 000001B4 626F6F744F5300                  db "bootOS",0
    618                                  
-   619                                          ;
-   620                                          ; Commands supported by bootOS
-   621                                          ;
-   622                                  commands:
-   623 000001C4 03646972                        db 3,"dir"
-   624 000001C8 [7600]                          dw dir_command
-   625 000001CA 06666F726D6174                  db 6,"format"
-   626 000001D1 [0A01]                          dw format_command
-   627 000001D3 05656E746572                    db 5,"enter"
-   628 000001D9 [7701]                          dw enter_command
-   629 000001DB 0364656C                        db 3,"del"
-   630 000001DF [6A00]                          dw del_command
-   631 000001E1 03766572                        db 3,"ver"
-   632 000001E5 [2300]                          dw ver_command
-   633 000001E7 00                              db 0
-   634                                  
-   635                                  int_restart:            equ 0x20
-   636                                  int_input_key:          equ 0x21
-   637                                  int_output_char:        equ 0x22
-   638                                  int_load_file:          equ 0x23
-   639                                  int_save_file:          equ 0x24
-   640                                  int_delete_file:        equ 0x25
-   641                                  
-   642                                  int_0x20:
-   643 000001E8 [2B00]                          dw restart          ; int 0x20
-   644 000001EA [5501]                          dw input_key        ; int 0x21
-   645 000001EC [5901]                          dw output_char      ; int 0x22
-   646 000001EE [9900]                          dw load_file        ; int 0x23
-   647 000001F0 [AD00]                          dw save_file        ; int 0x24
-   648 000001F2 [D100]                          dw delete_file      ; int 0x25
-   649                                  
-   650 000001F4 4F<rep Ah>                      times 510-($-$$) db 0x4f
-   651 000001FE 55AA                            db 0x55,0xaa            ; Make it a bootable sector
+   619                                  error_message:
+   620 000001BB 4F6F707300                      db "Oops",0
+   621                                  
+   622                                          ;
+   623                                          ; Commands supported by bootOS
+   624                                          ;
+   625                                  commands:
+   626 000001C0 03646972                        db 3,"dir"
+   627 000001C4 [7200]                          dw dir_command
+   628 000001C6 06666F726D6174                  db 6,"format"
+   629 000001CD [0601]                          dw format_command
+   630 000001CF 05656E746572                    db 5,"enter"
+   631 000001D5 [7301]                          dw enter_command
+   632 000001D7 0364656C                        db 3,"del"
+   633 000001DB [6600]                          dw del_command
+   634 000001DD 03766572                        db 3,"ver"
+   635 000001E1 [2300]                          dw ver_command
+   636 000001E3 00                              db 0
+   637 000001E4 [5600]                          dw exec_from_disk
+   638                                  
+   639                                  int_restart:            equ 0x20
+   640                                  int_input_key:          equ 0x21
+   641                                  int_output_char:        equ 0x22
+   642                                  int_load_file:          equ 0x23
+   643                                  int_save_file:          equ 0x24
+   644                                  int_delete_file:        equ 0x25
+   645                                  
+   646                                  int_0x20:
+   647 000001E6 [2B00]                          dw restart          ; int 0x20
+   648 000001E8 [5101]                          dw input_key        ; int 0x21
+   649 000001EA [5501]                          dw output_char      ; int 0x22
+   650 000001EC [9500]                          dw load_file        ; int 0x23
+   651 000001EE [A900]                          dw save_file        ; int 0x24
+   652 000001F0 [CD00]                          dw delete_file      ; int 0x25
+   653                                  
+   654 000001F2 4F<rep Ch>                      times 510-($-$$) db 0x4f
+   655 000001FE 55AA                            db 0x55,0xaa            ; Make it a bootable sector
