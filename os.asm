@@ -188,7 +188,10 @@ start:
         mov cx,sector_size
         rep movsb
 
-        mov si,int_0x20 ; SI now points to int_0x20 
+        ; NOTE: we could avoid the need for setting SI here
+        ; by adjusting the length of the copy above, but that
+        ; would break the 'format' command.
+        mov si,int_0x20 ; SI now points to int_0x20
         mov di,0x0020*4 ; Address of service for int 0x20
         mov cl,6
 .load_vec:
@@ -230,11 +233,9 @@ restart:
         ; won't be recognized as such (so file dirab cannot be
         ; executed).
 os11:
-        mov al,[di]     ; Read length of command in chars
+        mov cl,[di]     ; Read length of command in chars
         inc di
-        and ax,0x00ff   ; Is it zero?
-        je os12         ; Yes, jump
-        xchg ax,cx
+        xor ch, ch      ; Also makes sure that ZF = 1
         push si         ; Save current position
         rep cmpsb       ; Compare statement
         jne os14        ; Equal? No, jump
@@ -246,7 +247,9 @@ os14:   add di,cx       ; Advance the list pointer
         pop si
         jmp os11        ; Compare another statement
 
-os12:   mov bx,si       ; Input pointer
+exec_from_disk:
+        pop bx
+        pop bx
         mov di,boot     ; Location to read data
         int int_load_file       ; Load file
         jc os7          ; Jump if error
@@ -631,6 +634,7 @@ commands:
         db 3,"ver"
         dw ver_command
         db 0
+        dw exec_from_disk
 
 int_restart:            equ 0x20
 int_input_key:          equ 0x21
