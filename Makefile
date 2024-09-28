@@ -1,17 +1,19 @@
-# Makefile contributed by jtsiomb
+all:
+	nasm os.asm -f bin -o os.bin
+	nasm boot.asm -f bin -o boot.bin
 
-src = os.asm
+	dd if=/dev/zero of=zeros.img count=719 bs=512
 
-.PHONY: all
-all: os.img
+	cat boot.bin os.bin zeros.img > bootable.img
 
-os.img: $(src)
-	nasm -f bin -l os.lst -o $@ $(src)
-
-.PHONY: clean
 clean:
-	$(RM) os.img
+	rm -f os.bin boot.bin zeros.img
 
-.PHONY: runqemu
-runqemu: os.img
+clear:
+	rm -f bootable.img os.bin boot.bin zeros.img
+
+run:
 	qemu-system-i386 -fda os.img
+
+.PHONY: all clean clear run
+
