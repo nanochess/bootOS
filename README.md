@@ -14,11 +14,13 @@
 
 It's compatible with 8088 (the original IBM PC).
 
-If you want to assemble it, you must download the Netwide Assembler (nasm) from [www.nasm.us](http://nasm.us/)
+If you want to assemble it, you must download the Netwide Assembler (nasm) from [www.nasm.us](http://nasm.us/) or Tinyasm from [https://github.com/nanochess/tinyasm](https://github.com/nanochess/tinyasm)
 
 Use this command line:
 
     nasm -f bin os.asm -l os.lst -o os.img
+    
+    tinyasm -f bin os.asm -l os.lst -o os.img
 
         
 ### What is bootOS:
