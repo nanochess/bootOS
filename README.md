@@ -5,8 +5,8 @@
     | |_) | (_) | (_) | |_| |__| |____) |
     |_.__/ \___/ \___/ \__|\____/|_____/                                                                           
 
-#bootOS operating system in 512 bytes (boot sector)
-##by Oscar Toledo G. Jul/22/2019
+# bootOS operating system in 512 bytes (boot sector)
+## by Oscar Toledo G. Jul/22/2019
 
 [http://nanochess.org](http://nanochess.org)
 [https://github.com/nanochess/bootOS](https://github.com/nanochess/bootOS)
@@ -20,7 +20,7 @@ Use this command line:
     nasm -f bin os.asm -l os.lst -o os.img
 
         
-###What is bootOS:
+### What is bootOS:
 
 bootOS is a monolithic operating system that fits in one boot sector. It's able to load, execute, and save programs. Also keeps a filesystem. It can work with any floppy disk size starting at 180K.
 
@@ -54,7 +54,7 @@ It provides the following services:
                 Affects: All registers (including ES).
         
 
-###Filesystem organization:
+### Filesystem organization:
 
 bootOS uses tracks from 0 to 32, side 0, sector 1.
 
@@ -69,7 +69,7 @@ Each file is one sector long. Its location in the disk is derived from its posit
 The 1st file is located at track 1, side 0, sector 1. The 2nd file is located at track 2, side 0, sector 1. The 32nd file is located at track 32, side 0, sector 1.
  
 
-###Starting bootOS:
+### Starting bootOS:
 
 Just make sure to write it at the boot sector of a floppy disk. It can work with any floppy disk size (360K, 720K, 1.2MB and 1.44MB) and it will waste the disk space as only uses the first two sectors of the disk and then the first sector of each following track.
         
@@ -86,11 +86,11 @@ Tested with VirtualBox for Mac OS X running Windows XP running it, it also works
 
     qemu-system-x86_64 -fda os.img
 
-###Running bootOS:
+### Running bootOS:
 
 The first time you should enter the 'format' command, so it initializes the directory. It also copies itself again to the boot sector, this is useful to init new disks.
         
-###bootOS commands:
+### bootOS commands:
 
     ver           Shows the version (none at the moment)
     dir           Shows the directory's content.
@@ -121,7 +121,7 @@ For example: (Character + is Enter key)
     Hello, world
     $
         
-###bootOS programs: (Oh yes! we have software support)
+### bootOS programs: (Oh yes! we have software support)
         
     cubicDoom     https://github.com/nanochess/cubicDoom
     bricks        https://github.com/nanochess/bricks
@@ -163,7 +163,7 @@ _Special thanks to Maja Kądziołka (meithecatte) for finding some bugs and sugg
 There's a bootOS fork by jakiki6 capable of running from an USB stick, and including many other changes. Download from: https://github.com/jakiki6/bootOS
 
 
-###>> ATTENTION <<        
+### >> ATTENTION <<        
 
 Would you like to learn 8086/8088 programming? Then you must get my new book Programming Boot Sector Games including a 8086/8088 crash course!
 
