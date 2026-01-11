@@ -6,9 +6,10 @@
     |_.__/ \___/ \___/ \__|\____/|_____/                                                                           
 
 # bootOS operating system in 512 bytes (boot sector)
-## by Oscar Toledo G. Jul/22/2019
+### by Oscar Toledo G. Jul/22/2019
 
 [http://nanochess.org](http://nanochess.org)
+
 [https://github.com/nanochess/bootOS](https://github.com/nanochess/bootOS)
 
 It's compatible with 8088 (the original IBM PC).
