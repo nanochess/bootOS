@@ -22,18 +22,16 @@ Use this command line:
     
     tinyasm -f bin os.asm -l os.lst -o os.img
 
-Also, you can use scripts:
+Some scripts are provided for faster assembling:
 
-Windows
-```
-./e.bat
-```
+Windows:
 
-Linux
-```
-chmod +x e.sh
-./e.sh
-```
+    e.bat
+
+Linux:
+
+    chmod +x e.sh
+    ./e.sh
         
 ### What is bootOS:
 
