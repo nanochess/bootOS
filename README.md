@@ -22,6 +22,18 @@ Use this command line:
     
     tinyasm -f bin os.asm -l os.lst -o os.img
 
+Also, you can use scripts:
+
+Windows
+```
+./e.bat
+```
+
+Linux
+```
+chmod +x e.sh
+./e.sh
+```
         
 ### What is bootOS:
 
