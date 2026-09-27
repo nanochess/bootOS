@@ -1,3 +1,6 @@
 .DS_Store
 nasm
-
+os-disk.img
+build/
+__pycache__/
+*.py[cod]

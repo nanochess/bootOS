@@ -1,0 +1,14 @@
+workload                 variant     diskIO  dirWrites  opcodes  REP/str iterations
+repeat_same_file         upstream       200          0     9100               1200
+repeat_same_file         core           200          0    10100               1200
+repeat_same_file         core+fast        2          0     6310              26812
+overwrite_same_file      upstream       400        200    17900               4000
+overwrite_same_file      core           200          0    10200               1200
+overwrite_same_file      core+fast      200          0    10600               1200
+alternating_two_files    upstream       200          0     9600               1150
+alternating_two_files    core           200          0    10500               1150
+alternating_two_files    core+fast      200          0    18637              28048
+missing_name             upstream       100          0    51600               4000
+missing_name             core           100          0    52800               4000
+missing_name             core+fast      100          0    54900               4000
+Raw report: /mnt/data/bootos-work/bootOS/reports/benchmark.json

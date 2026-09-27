@@ -1,0 +1,46 @@
+# Additive build/test entry point: make -f Makefile.engineering verify
+PYTHON ?= python3
+NASM ?= nasm
+QEMU ?= qemu-system-i386
+
+.PHONY: all verify benchmark image nasm-check qemu-smoke clean
+all: build/baseline.img build/core.img build/fast.img build/demo.img
+
+build/baseline.img: tests/fixtures/upstream-os.asm tools/build_gas.py
+	$(PYTHON) tools/build_gas.py $< $@
+
+build/core.img: os.asm tools/build_gas.py
+	$(PYTHON) tools/build_gas.py $< $@
+
+build/fast.img: fast.asm tools/build_gas.py
+	$(PYTHON) tools/build_gas.py $< $@ --origin 0
+
+build/demo.img: demo.asm tools/build_gas.py
+	$(PYTHON) tools/build_gas.py $< $@ --origin 0x7c00
+
+verify: all
+	$(PYTHON) -m unittest discover -s tests -v
+
+benchmark: verify
+	$(PYTHON) tools/benchmark.py
+
+image: all
+	$(PYTHON) tools/demo_image.py --output build/demo-disk.img
+
+# Independent assemblers must produce identical binaries. Requires NASM.
+nasm-check: all
+	$(NASM) -f bin tests/fixtures/upstream-os.asm -o build/baseline.nasm.img
+	$(NASM) -f bin os.asm -o build/core.nasm.img
+	$(NASM) -f bin fast.asm -o build/fast.nasm.img
+	$(NASM) -f bin demo.asm -o build/demo.nasm.img
+	cmp build/baseline.img build/baseline.nasm.img
+	cmp build/core.img build/core.nasm.img
+	cmp build/fast.img build/fast.nasm.img
+	cmp build/demo.img build/demo.nasm.img
+
+qemu-smoke: all
+	$(PYTHON) tools/qemu_smoke.py --qemu $(QEMU)
+
+# No upstream/generated root images are deleted by this target.
+clean:
+	$(RM) -r build

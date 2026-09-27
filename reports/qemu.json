@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "qemu": "/usr/bin/qemu-system-i386",
+  "check": "BIOS boot + installer + two application executions",
+  "memory_kib_before": 639,
+  "memory_kib_after": 637,
+  "limits": "Functional smoke only; no performance or hardware equivalence claim"
+}

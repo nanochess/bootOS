@@ -185,8 +185,8 @@ start:
         cld             ; Clear D flag.
         mov si,boot     ; Copy bootOS boot sector...
         mov di,osbase   ; ...into osbase
-        mov cx,sector_size
-        rep movsb
+        mov cx,sector_size/2
+        rep movsw
 
         ; NOTE: we could avoid the need for setting SI here
         ; by adjusting the length of the copy above, but that
@@ -292,28 +292,6 @@ os17:   call next_entry
         ret                     ; Return
 
         ;
-        ; Get filename length and prepare for directory lookup
-        ; Entry:
-        ;   si = pointer to string
-        ; Output:
-        ;   si = unaffected
-        ;   di = pointer to start of directory
-        ;   cx = length of filename including zero terminator
-        ;
-filename_length:
-        push si
-        xor cx,cx       ; cx = 0
-.loop:
-        lodsb           ; Read character.
-        inc cx          ; Count character.
-        cmp al,0        ; Is it zero (end character)?
-        jne .loop       ; No, jump.
-
-        pop si
-        mov di,sector   ; Point to start of directory.
-        ret
-        
-        ;
         ; >> SERVICE <<
         ; Load file
         ;
@@ -352,10 +330,11 @@ ret_cf:
 save_file:
         push di                 ; Save origin
         push es
-        push bx                 ; Save filename pointer
-        int int_delete_file     ; Delete previous file (sanitizes ES)
-        pop bx                  ; Restore filename pointer
-        call filename_length    ; Prepare for lookup
+        call find_file          ; Read/search directory once (sanitizes ES)
+        mov ah,0x03             ; Existing file: overwrite data, not metadata
+        jnc shared_file
+        jcxz shared_file        ; Invalid name: CF is set, do not allocate
+        mov di,sector           ; Missing name: find a free directory slot
 
 .find:  es cmp byte [di],0      ; Found empty directory entry?
         je .empty               ; Yes, jump and fill it.
@@ -399,7 +378,25 @@ find_file:
         push bx
         call read_dir   ; Read directory (sanitizes ES)
         pop si
-        call filename_length    ; Get filename length and setup DI
+        cld                     ; API callers may have set the direction flag
+        ; Bounded name scan: never read beyond a 16-byte directory entry.
+        ; CX = 0, CF = 1 denotes invalid input; valid misses retain CX.
+filename_length:
+        push si
+        xor cx,cx
+.length:
+        lodsb
+        inc cx
+        test al,al
+        je .done
+        cmp cl,entry_size
+        jb .length
+        xor cx,cx
+        stc
+.done:
+        pop si
+        mov di,bx               ; read_dir returned BX = sector
+        jc invalid_filename
 os6:
         push si
         push di
@@ -411,6 +408,7 @@ os6:
         je get_location ; Jump if equal.
         call next_entry
         jne os6         ; No, jump
+invalid_filename:
         ret             ; Return
 
 next_entry:

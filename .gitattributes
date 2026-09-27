@@ -1,0 +1,2 @@
+# Preserve the byte-exact upstream fixture, including its original whitespace.
+tests/fixtures/upstream-os.asm -whitespace

@@ -1,0 +1,51 @@
+python3 tools/build_gas.py tests/fixtures/upstream-os.asm build/baseline.img
+build/baseline.img: 512 bytes, payload 498, signature 55aa
+python3 -m unittest discover -s tests -v
+test_alternating_files_no_io_improvement (test_core.AcceleratorTests.test_alternating_files_no_io_improvement) ... ok
+test_cold_and_warm_load_on_both_kernels (test_core.AcceleratorTests.test_cold_and_warm_load_on_both_kernels) ... ok
+test_delete_invalidates (test_core.AcceleratorTests.test_delete_invalidates) ... ok
+test_direction_flag_and_nonzero_segments (test_core.AcceleratorTests.test_direction_flag_and_nonzero_segments) ... ok
+test_format_invalidates (test_core.AcceleratorTests.test_format_invalidates) ... ok
+test_low_memory_refusal (test_core.AcceleratorTests.test_low_memory_refusal) ... ok
+test_memory_reservation_and_repeat_install (test_core.AcceleratorTests.test_memory_reservation_and_repeat_install) ... ok
+test_missing_names_not_cached (test_core.AcceleratorTests.test_missing_names_not_cached) ... ok
+test_raw_bios_write_invalidates (test_core.AcceleratorTests.test_raw_bios_write_invalidates) ... ok
+test_reinstall_flushes_swapped_media (test_core.AcceleratorTests.test_reinstall_flushes_swapped_media) ... ok
+test_save_invalidates_and_delivers_new_data (test_core.AcceleratorTests.test_save_invalidates_and_delivers_new_data) ... ok
+test_all_32_slots (test_core.CoreTests.test_all_32_slots) ... ok
+test_boot_entry_points_and_relocation (test_core.CoreTests.test_boot_entry_points_and_relocation) ... ok
+test_create_read_delete_missing (test_core.CoreTests.test_create_read_delete_missing) ... ok
+test_full_directory_rejects_create_but_allows_overwrite (test_core.CoreTests.test_full_directory_rejects_create_but_allows_overwrite) ... ok
+test_nonzero_segments_and_caller_direction_flag (test_core.CoreTests.test_nonzero_segments_and_caller_direction_flag) ... ok
+test_overlong_names_do_not_modify_disk (test_core.CoreTests.test_overlong_names_do_not_modify_disk) ... ok
+test_overwrite_eliminates_metadata_writes (test_core.CoreTests.test_overwrite_eliminates_metadata_writes) ... ok
+test_overwrite_preserves_slot_even_with_earlier_holes (test_core.CoreTests.test_overwrite_preserves_slot_even_with_earlier_holes) ... ok
+test_shell_version_directory_and_format (test_core.CoreTests.test_shell_version_directory_and_format) ... ok
+test_valid_name_boundaries (test_core.CoreTests.test_valid_name_boundaries) ... ok
+test_backspace_still_underflows_line_buffer (test_core.KnownLimitTests.test_backspace_still_underflows_line_buffer) ... ok
+test_empty_filename_remains_accepted (test_core.KnownLimitTests.test_empty_filename_remains_accepted) ... ok
+test_infinite_retry_remains_bounded_by_test_harness (test_core.KnownLimitTests.test_infinite_retry_remains_bounded_by_test_harness) ... ok
+test_shell_input_still_has_no_upper_bound (test_core.KnownLimitTests.test_shell_input_still_has_no_upper_bound) ... ok
+test_upstream_overlong_name_corrupts_next_directory_slot (test_core.KnownLimitTests.test_upstream_overlong_name_corrupts_next_directory_slot) ... ok
+test_all_boot_sectors (test_core.ProvenanceTests.test_all_boot_sectors) ... ok
+test_exact_upstream_binary (test_core.ProvenanceTests.test_exact_upstream_binary) ... ok
+test_exact_upstream_source (test_core.ProvenanceTests.test_exact_upstream_source) ... ok
+test_add_carry (test_core.RunnerSelfTests.test_add_carry) ... ok
+test_interrupt_and_iret (test_core.RunnerSelfTests.test_interrupt_and_iret) ... ok
+test_subtract_borrow (test_core.RunnerSelfTests.test_subtract_borrow) ... ok
+test_unknown_opcode_fails_closed (test_core.RunnerSelfTests.test_unknown_opcode_fails_closed) ... ok
+test_atomic_publication_no_clobber_and_explicit_replace (test_image.ImageTests.test_atomic_publication_no_clobber_and_explicit_replace) ... ok
+test_directory_corruption_rejected (test_image.ImageTests.test_directory_corruption_rejected) ... ok
+test_every_geometry_and_last_slot (test_image.ImageTests.test_every_geometry_and_last_slot) ... ok
+test_invalid_inputs (test_image.ImageTests.test_invalid_inputs) ... ok
+test_reject_symlinks_and_devices (test_image.ImageTests.test_reject_symlinks_and_devices) ... ok
+test_short_file_padding_and_overwrite (test_image.ImageTests.test_short_file_padding_and_overwrite) ... ok
+test_upgrade_preserves_every_nonboot_byte (test_image.ImageTests.test_upgrade_preserves_every_nonboot_byte) ... ok
+test_utility_images_execute_with_kernel (test_image.ImageTests.test_utility_images_execute_with_kernel) ... ok
+test_real_shell_loads_installer_then_executes_program_twice (test_sequences.SequenceTests.test_real_shell_loads_installer_then_executes_program_twice) ... ok
+test_seeded_filesystem_sequences_with_and_without_cache (test_sequences.SequenceTests.test_seeded_filesystem_sequences_with_and_without_cache) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 2.678s
+
+OK

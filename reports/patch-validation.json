@@ -1,0 +1,23 @@
+{
+  "baseline_commit": "e54fffe4243bb77e487798801a3bc4c3e60cb01e",
+  "checks": [
+    {
+      "patch": "bootOS-Core-512.patch",
+      "forward_check": "PASS",
+      "apply": "PASS",
+      "modified_source_matches": "PASS",
+      "build_and_tests_after_apply": "not applicable",
+      "reverse_check": "PASS",
+      "reverse_restores_original_source": "PASS"
+    },
+    {
+      "patch": "bootOS-Engineering.patch",
+      "forward_check": "PASS",
+      "apply": "PASS",
+      "modified_source_matches": "PASS",
+      "build_and_tests_after_apply": "PASS",
+      "reverse_check": "PASS",
+      "reverse_restores_original_source": "PASS"
+    }
+  ]
+}

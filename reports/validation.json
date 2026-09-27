@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-27",
+  "baseline_repository": "nanochess/bootOS",
+  "baseline_commit": "e54fffe4243bb77e487798801a3bc4c3e60cb01e",
+  "tests": {
+    "status": "PASS",
+    "test_methods": 43,
+    "sequence_operations": 1200,
+    "diagnostic_methods": 5,
+    "note": "Diagnostic tests reproduce defects/limitations, not fixes"
+  },
+  "nasm": {
+    "status": "PASS",
+    "command": "make -f Makefile.engineering nasm-check",
+    "result": "4/4 artifacts byte-identical to GNU binutils builds"
+  },
+  "qemu": {
+    "status": "PASS",
+    "command": "make -f Makefile.engineering qemu-smoke",
+    "result": "BIOS boot, fast installation and two demo executions",
+    "memory_kib_before": 639,
+    "memory_kib_after": 637
+  },
+  "hardware": {
+    "status": "NOT_RUN"
+  },
+  "byte_sizes": {
+    "baseline": 512,
+    "core": 512,
+    "fast": 512,
+    "demo": 512
+  },
+  "source_git_blob": {
+    "baseline": "7365e404118f5a8bcf245447dfe0df5fffa69963",
+    "core": "3c6f23d46a2a503e7f124721f15e8c0208cfc5d2",
+    "fast": "1db4d2ef75c7e0526d2c7663be5aa339e20713af",
+    "demo": "436e36ba713b99f57027bc04a8cfdbe6dfc4ff22"
+  },
+  "binary_git_blob": {
+    "baseline": "e48996807e07a128e7861587aebf86d6f2063fa7",
+    "core": "925e3a9155d56b9e57eedf3fbf9afbdff783f936",
+    "fast": "06634617b30f4f36aa3ecfd109bcdf0cf1297d0b",
+    "demo": "d388ea8ee42f3130e78e5ee4faa1f75583da230b"
+  },
+  "payload_bytes": {
+    "baseline": 498,
+    "core": 509,
+    "fast": 269,
+    "demo": 31
+  }
+}

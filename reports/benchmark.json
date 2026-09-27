@@ -1,0 +1,257 @@
+{
+  "baseline_commit": "e54fffe4243bb77e487798801a3bc4c3e60cb01e",
+  "date": "2026-09-27",
+  "method": "actual assembled machine code on project-local 8086 subset runner; deterministic BIOS doubles",
+  "limits": [
+    "Not cycle-accurate",
+    "Not an independent full-PC emulator",
+    "No QEMU boot test run here",
+    "No physical floppy or latency measurement",
+    "Cache installation and boot costs excluded; first cold load INCLUDED",
+    "Cache reserves 2 KiB; single-file cache is explicitly opt-in"
+  ],
+  "host": {
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+    "assembler": "GNU assembler (GNU Binutils for Ubuntu) 2.42"
+  },
+  "binary_sha256": {
+    "baseline": "35e1231cf29f8750566a97dfb628b2bbe2c24a2f7d7518d7a94103f9976d3df8",
+    "core": "caa2b92ce552c75076dc3fcb5db9743b17278fc0d05900132c7540016706e3cf",
+    "fast": "f3f877de2a9fdd7cba68a697b5245a35bed57d0967b0c87a622756bd315948dc"
+  },
+  "results": [
+    {
+      "variant": "upstream",
+      "workload": "repeat_same_file",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 5400,
+        "int_13": 200,
+        "int_23": 100,
+        "opcodes": 9100,
+        "sector_reads": 200,
+        "string_iterations": 1200
+      },
+      "guest_work_units": 10300,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core",
+      "workload": "repeat_same_file",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 5300,
+        "int_13": 200,
+        "int_23": 100,
+        "opcodes": 10100,
+        "sector_reads": 200,
+        "string_iterations": 1200
+      },
+      "guest_work_units": 11300,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core+fast",
+      "workload": "repeat_same_file",
+      "operations": 100,
+      "bios_disk_calls": 2,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 2,
+        "data_reads": 28155,
+        "int_13": 2,
+        "int_23": 100,
+        "opcodes": 6310,
+        "sector_reads": 2,
+        "string_iterations": 26812
+      },
+      "guest_work_units": 33122,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "upstream",
+      "workload": "overwrite_same_file",
+      "operations": 100,
+      "bios_disk_calls": 400,
+      "directory_writes": 200,
+      "counts": {
+        "bios_13": 400,
+        "data_reads": 9800,
+        "int_13": 400,
+        "int_24": 100,
+        "int_25": 100,
+        "opcodes": 17900,
+        "sector_reads": 100,
+        "sector_writes": 300,
+        "string_iterations": 4000
+      },
+      "guest_work_units": 21900,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core",
+      "workload": "overwrite_same_file",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 5300,
+        "int_13": 200,
+        "int_24": 100,
+        "opcodes": 10200,
+        "sector_reads": 100,
+        "sector_writes": 100,
+        "string_iterations": 1200
+      },
+      "guest_work_units": 11400,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core+fast",
+      "workload": "overwrite_same_file",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 5700,
+        "int_13": 200,
+        "int_24": 100,
+        "opcodes": 10600,
+        "sector_reads": 100,
+        "sector_writes": 100,
+        "string_iterations": 1200
+      },
+      "guest_work_units": 11800,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "upstream",
+      "workload": "alternating_two_files",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 5550,
+        "int_13": 200,
+        "int_23": 100,
+        "opcodes": 9600,
+        "sector_reads": 200,
+        "string_iterations": 1150
+      },
+      "guest_work_units": 10750,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core",
+      "workload": "alternating_two_files",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 5450,
+        "int_13": 200,
+        "int_23": 100,
+        "opcodes": 10500,
+        "sector_reads": 200,
+        "string_iterations": 1150
+      },
+      "guest_work_units": 11650,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core+fast",
+      "workload": "alternating_two_files",
+      "operations": 100,
+      "bios_disk_calls": 200,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 200,
+        "data_reads": 34195,
+        "int_13": 200,
+        "int_23": 100,
+        "opcodes": 18637,
+        "sector_reads": 200,
+        "string_iterations": 28048
+      },
+      "guest_work_units": 46685,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "upstream",
+      "workload": "missing_name",
+      "operations": 100,
+      "bios_disk_calls": 100,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 100,
+        "data_reads": 22400,
+        "int_13": 100,
+        "int_23": 100,
+        "opcodes": 51600,
+        "sector_reads": 100,
+        "string_iterations": 4000
+      },
+      "guest_work_units": 55600,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core",
+      "workload": "missing_name",
+      "operations": 100,
+      "bios_disk_calls": 100,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 100,
+        "data_reads": 22300,
+        "int_13": 100,
+        "int_23": 100,
+        "opcodes": 52800,
+        "sector_reads": 100,
+        "string_iterations": 4000
+      },
+      "guest_work_units": 56800,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    },
+    {
+      "variant": "core+fast",
+      "workload": "missing_name",
+      "operations": 100,
+      "bios_disk_calls": 100,
+      "directory_writes": 0,
+      "counts": {
+        "bios_13": 100,
+        "data_reads": 23700,
+        "int_13": 100,
+        "int_23": 100,
+        "opcodes": 54900,
+        "sector_reads": 100,
+        "string_iterations": 4000
+      },
+      "guest_work_units": 58900,
+      "guest_work_units_definition": "decoded opcodes + string iterations; NOT cycles",
+      "byte_result_checks": "passed"
+    }
+  ]
+}

@@ -32,6 +32,13 @@ Linux:
 
     chmod +x e.sh
     ./e.sh
+
+Or use the Makefile to build a bootable 360K floppy image and run it with QEMU:
+
+    make
+    make run
+
+On the first boot, type `format` at the `bootOS` prompt to initialize the disk.
         
 ### What is bootOS:
 
